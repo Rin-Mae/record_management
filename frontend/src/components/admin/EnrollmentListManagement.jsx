@@ -39,7 +39,10 @@ export default function EnrollmentListManagement() {
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState("create");
   const [editingId, setEditingId] = useState(null);
-  const [formData, setFormData] = useState({ period: "1st Semester", academic_year: "" });
+  const [formData, setFormData] = useState({
+    period: "1st Semester",
+    academic_year: "",
+  });
   const [formErrors, setFormErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -106,7 +109,8 @@ export default function EnrollmentListManagement() {
           per_page: pagination.perPage,
           search: search || undefined,
         };
-        const response = await EnrollmentListServices.getEnrollmentLists(params);
+        const response =
+          await EnrollmentListServices.getEnrollmentLists(params);
         if (response.success) {
           setEnrollments(response.data.data);
           setPagination({
@@ -136,7 +140,10 @@ export default function EnrollmentListManagement() {
     setModalMode("create");
     setFormErrors({});
     setEditingId(null);
-    setFormData({ period: "1st Semester", academic_year: yearOptions[2] || "" });
+    setFormData({
+      period: "1st Semester",
+      academic_year: yearOptions[2] || "",
+    });
     setShowModal(true);
   };
 
@@ -144,7 +151,10 @@ export default function EnrollmentListManagement() {
     setModalMode("edit");
     setFormErrors({});
     setEditingId(enrollment.id);
-    setFormData({ period: enrollment.period, academic_year: enrollment.academic_year });
+    setFormData({
+      period: enrollment.period,
+      academic_year: enrollment.academic_year,
+    });
     setShowModal(true);
   };
 
@@ -152,7 +162,8 @@ export default function EnrollmentListManagement() {
     e.preventDefault();
     const errors = {};
     if (!formData.period) errors.period = "Period is required";
-    if (!formData.academic_year) errors.academic_year = "Academic year is required";
+    if (!formData.academic_year)
+      errors.academic_year = "Academic year is required";
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       return;
@@ -168,7 +179,10 @@ export default function EnrollmentListManagement() {
           fetchEnrollments(pagination.currentPage);
         }
       } else {
-        const res = await EnrollmentListServices.updateEnrollmentList(editingId, formData);
+        const res = await EnrollmentListServices.updateEnrollmentList(
+          editingId,
+          formData,
+        );
         if (res.success) {
           toast.success("Enrollment period updated");
           setShowModal(false);
@@ -196,7 +210,9 @@ export default function EnrollmentListManagement() {
     if (!itemToDelete) return;
     setDeleting(true);
     try {
-      const res = await EnrollmentListServices.deleteEnrollmentList(itemToDelete.id);
+      const res = await EnrollmentListServices.deleteEnrollmentList(
+        itemToDelete.id,
+      );
       if (res.success) {
         toast.success("Enrollment period deleted");
         setShowDeleteModal(false);
@@ -223,7 +239,12 @@ export default function EnrollmentListManagement() {
     setSelectedEnrollment(enrollment);
     setStudentSearch("");
     setStudents([]);
-    setStudentsPagination({ currentPage: 1, lastPage: 1, total: 0, perPage: 20 });
+    setStudentsPagination({
+      currentPage: 1,
+      lastPage: 1,
+      total: 0,
+      perPage: 20,
+    });
   };
 
   const fetchStudents = useCallback(
@@ -412,10 +433,12 @@ export default function EnrollmentListManagement() {
               <div className="flex-grow-1">
                 <h1 className="h3 mb-0">
                   <FiCalendar size={22} className="me-2 text-success" />
-                  {selectedEnrollment.period} &mdash; {selectedEnrollment.academic_year}
+                  {selectedEnrollment.period} &mdash;{" "}
+                  {selectedEnrollment.academic_year}
                 </h1>
                 <p className="text-muted mb-0 mt-1">
-                  {studentsPagination.total} student{studentsPagination.total !== 1 && "s"} enrolled
+                  {studentsPagination.total} student
+                  {studentsPagination.total !== 1 && "s"} enrolled
                 </p>
               </div>
               <button
@@ -461,7 +484,7 @@ export default function EnrollmentListManagement() {
                     <p className="text-muted">
                       {studentSearch
                         ? "No matching students found"
-                        : "Click \"Add Students\" to enroll students in this period"}
+                        : 'Click "Add Students" to enroll students in this period'}
                     </p>
                   </div>
                 ) : (
@@ -480,11 +503,15 @@ export default function EnrollmentListManagement() {
                         {students.map((student) => (
                           <tr key={student.id}>
                             <td>
-                              <span className="fw-semibold">{student.student_id}</span>
+                              <span className="fw-semibold">
+                                {student.student_id}
+                              </span>
                             </td>
                             <td>
                               {student.firstname}{" "}
-                              {student.middlename ? student.middlename + " " : ""}
+                              {student.middlename
+                                ? student.middlename + " "
+                                : ""}
                               {student.lastname}
                             </td>
                             <td>{student.course}</td>
@@ -492,7 +519,9 @@ export default function EnrollmentListManagement() {
                             <td>
                               <button
                                 className="btn btn-sm btn-outline-danger"
-                                onClick={() => handleRemoveStudentClick(student)}
+                                onClick={() =>
+                                  handleRemoveStudentClick(student)
+                                }
                                 title="Remove student"
                               >
                                 <FiX size={14} />
@@ -510,24 +539,38 @@ export default function EnrollmentListManagement() {
               {studentsPagination.lastPage > 1 && (
                 <div className="card-footer bg-white d-flex justify-content-between align-items-center">
                   <small className="text-muted">
-                    Showing {(studentsPagination.currentPage - 1) * studentsPagination.perPage + 1}-
+                    Showing{" "}
+                    {(studentsPagination.currentPage - 1) *
+                      studentsPagination.perPage +
+                      1}
+                    -
                     {Math.min(
-                      studentsPagination.currentPage * studentsPagination.perPage,
+                      studentsPagination.currentPage *
+                        studentsPagination.perPage,
                       studentsPagination.total,
                     )}{" "}
                     of {studentsPagination.total}
                   </small>
                   <nav>
                     <ul className="pagination pagination-sm mb-0">
-                      <li className={`page-item ${studentsPagination.currentPage === 1 ? "disabled" : ""}`}>
+                      <li
+                        className={`page-item ${studentsPagination.currentPage === 1 ? "disabled" : ""}`}
+                      >
                         <button
                           className="page-link"
-                          onClick={() => handleStudentsPageChange(studentsPagination.currentPage - 1)}
+                          onClick={() =>
+                            handleStudentsPageChange(
+                              studentsPagination.currentPage - 1,
+                            )
+                          }
                         >
                           Previous
                         </button>
                       </li>
-                      {Array.from({ length: studentsPagination.lastPage }, (_, i) => i + 1)
+                      {Array.from(
+                        { length: studentsPagination.lastPage },
+                        (_, i) => i + 1,
+                      )
                         .filter(
                           (p) =>
                             p === 1 ||
@@ -547,10 +590,16 @@ export default function EnrollmentListManagement() {
                             </button>
                           </li>
                         ))}
-                      <li className={`page-item ${studentsPagination.currentPage === studentsPagination.lastPage ? "disabled" : ""}`}>
+                      <li
+                        className={`page-item ${studentsPagination.currentPage === studentsPagination.lastPage ? "disabled" : ""}`}
+                      >
                         <button
                           className="page-link"
-                          onClick={() => handleStudentsPageChange(studentsPagination.currentPage + 1)}
+                          onClick={() =>
+                            handleStudentsPageChange(
+                              studentsPagination.currentPage + 1,
+                            )
+                          }
                         >
                           Next
                         </button>
@@ -565,17 +614,27 @@ export default function EnrollmentListManagement() {
 
         {/* Add Students Modal */}
         {showAddStudentsModal && (
-          <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+          <div
+            className="modal fade show d-block"
+            style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+          >
             <div className="modal-dialog modal-lg modal-dialog-centered">
               <div className="modal-content">
                 <div className="modal-header">
                   <h5 className="modal-title">Add Students</h5>
-                  <button type="button" className="btn-close" onClick={() => setShowAddStudentsModal(false)} />
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={() => setShowAddStudentsModal(false)}
+                  />
                 </div>
                 <div className="modal-body">
                   <p className="text-muted small mb-3">
                     Search and select students to add to{" "}
-                    <strong>{selectedEnrollment.period} {selectedEnrollment.academic_year}</strong>
+                    <strong>
+                      {selectedEnrollment.period}{" "}
+                      {selectedEnrollment.academic_year}
+                    </strong>
                   </p>
 
                   {/* Search input */}
@@ -602,7 +661,10 @@ export default function EnrollmentListManagement() {
                   >
                     {searchingStudents ? (
                       <div className="p-3 text-center text-muted">
-                        <span className="spinner-border spinner-border-sm me-2" role="status" />
+                        <span
+                          className="spinner-border spinner-border-sm me-2"
+                          role="status"
+                        />
                         Searching...
                       </div>
                     ) : addStudentResults.length > 0 ? (
@@ -624,7 +686,9 @@ export default function EnrollmentListManagement() {
                             <FiUser size={14} />
                             <div className="flex-grow-1">
                               <div className="fw-semibold">
-                                {s.firstname} {s.middlename ? s.middlename + " " : ""}{s.lastname}
+                                {s.firstname}{" "}
+                                {s.middlename ? s.middlename + " " : ""}
+                                {s.lastname}
                               </div>
                               <small className="text-muted">
                                 {s.student_id} &mdash; {s.course}
@@ -634,7 +698,9 @@ export default function EnrollmentListManagement() {
                         );
                       })
                     ) : addStudentSearch.length >= 2 ? (
-                      <div className="p-3 text-center text-muted">No students found</div>
+                      <div className="p-3 text-center text-muted">
+                        No students found
+                      </div>
                     ) : (
                       <div className="p-3 text-center text-muted">
                         Type at least 2 characters to search
@@ -645,7 +711,8 @@ export default function EnrollmentListManagement() {
                   {selectedStudentIds.length > 0 && (
                     <div className="mt-2">
                       <small className="text-success fw-semibold">
-                        {selectedStudentIds.length} student{selectedStudentIds.length !== 1 && "s"} selected
+                        {selectedStudentIds.length} student
+                        {selectedStudentIds.length !== 1 && "s"} selected
                       </small>
                     </div>
                   )}
@@ -664,9 +731,14 @@ export default function EnrollmentListManagement() {
                     disabled={addingStudents || selectedStudentIds.length === 0}
                   >
                     {addingStudents && (
-                      <span className="spinner-border spinner-border-sm" role="status" />
+                      <span
+                        className="spinner-border spinner-border-sm"
+                        role="status"
+                      />
                     )}
-                    Add {selectedStudentIds.length > 0 && `(${selectedStudentIds.length})`}
+                    Add{" "}
+                    {selectedStudentIds.length > 0 &&
+                      `(${selectedStudentIds.length})`}
                   </button>
                 </div>
               </div>
@@ -676,16 +748,27 @@ export default function EnrollmentListManagement() {
 
         {/* Remove Student Modal */}
         {showRemoveStudentModal && studentToRemove && (
-          <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+          <div
+            className="modal fade show d-block"
+            style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+          >
             <div className="modal-dialog modal-dialog-centered">
               <div className="modal-content">
                 <div className="modal-header">
                   <h5 className="modal-title text-danger">Remove Student</h5>
-                  <button type="button" className="btn-close" onClick={() => setShowRemoveStudentModal(false)} />
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={() => setShowRemoveStudentModal(false)}
+                  />
                 </div>
                 <div className="modal-body">
                   <p>
-                    Remove <strong>{studentToRemove.firstname} {studentToRemove.lastname}</strong> ({studentToRemove.student_id}) from this enrollment list?
+                    Remove{" "}
+                    <strong>
+                      {studentToRemove.firstname} {studentToRemove.lastname}
+                    </strong>{" "}
+                    ({studentToRemove.student_id}) from this enrollment list?
                   </p>
                 </div>
                 <div className="modal-footer">
@@ -702,7 +785,10 @@ export default function EnrollmentListManagement() {
                     disabled={removingStudent}
                   >
                     {removingStudent && (
-                      <span className="spinner-border spinner-border-sm" role="status" />
+                      <span
+                        className="spinner-border spinner-border-sm"
+                        role="status"
+                      />
                     )}
                     Remove
                   </button>
@@ -776,7 +862,8 @@ export default function EnrollmentListManagement() {
                 </div>
                 <div className="col-md-6 d-flex align-items-center">
                   <span className="text-muted">
-                    {pagination.total} period{pagination.total !== 1 && "s"} found
+                    {pagination.total} period{pagination.total !== 1 && "s"}{" "}
+                    found
                   </span>
                 </div>
               </div>
@@ -799,7 +886,7 @@ export default function EnrollmentListManagement() {
                   <p className="text-muted">
                     {search
                       ? "No matching periods found"
-                      : "Click \"Add Enrollment Period\" to create one"}
+                      : 'Click "Add Enrollment Period" to create one'}
                   </p>
                 </div>
               ) : (
@@ -821,8 +908,12 @@ export default function EnrollmentListManagement() {
                               className="btn btn-link p-0 text-decoration-none text-start fw-semibold"
                               onClick={() => openEnrollmentStudents(enrollment)}
                             >
-                              <FiCalendar size={14} className="me-2 text-success" />
-                              {enrollment.period} &mdash; {enrollment.academic_year}
+                              <FiCalendar
+                                size={14}
+                                className="me-2 text-success"
+                              />
+                              {enrollment.period} &mdash;{" "}
+                              {enrollment.academic_year}
                             </button>
                           </td>
                           <td>
@@ -833,7 +924,9 @@ export default function EnrollmentListManagement() {
                           </td>
                           <td>
                             <small className="text-muted">
-                              {new Date(enrollment.created_at).toLocaleDateString()}
+                              {new Date(
+                                enrollment.created_at,
+                              ).toLocaleDateString()}
                             </small>
                           </td>
                           <td>
@@ -866,21 +959,32 @@ export default function EnrollmentListManagement() {
             {pagination.lastPage > 1 && (
               <div className="card-footer bg-white d-flex justify-content-between align-items-center">
                 <small className="text-muted">
-                  Showing {(pagination.currentPage - 1) * pagination.perPage + 1}-
-                  {Math.min(pagination.currentPage * pagination.perPage, pagination.total)}{" "}
+                  Showing{" "}
+                  {(pagination.currentPage - 1) * pagination.perPage + 1}-
+                  {Math.min(
+                    pagination.currentPage * pagination.perPage,
+                    pagination.total,
+                  )}{" "}
                   of {pagination.total}
                 </small>
                 <nav>
                   <ul className="pagination pagination-sm mb-0">
-                    <li className={`page-item ${pagination.currentPage === 1 ? "disabled" : ""}`}>
+                    <li
+                      className={`page-item ${pagination.currentPage === 1 ? "disabled" : ""}`}
+                    >
                       <button
                         className="page-link"
-                        onClick={() => handlePageChange(pagination.currentPage - 1)}
+                        onClick={() =>
+                          handlePageChange(pagination.currentPage - 1)
+                        }
                       >
                         Previous
                       </button>
                     </li>
-                    {Array.from({ length: pagination.lastPage }, (_, i) => i + 1)
+                    {Array.from(
+                      { length: pagination.lastPage },
+                      (_, i) => i + 1,
+                    )
                       .filter(
                         (p) =>
                           p === 1 ||
@@ -900,10 +1004,14 @@ export default function EnrollmentListManagement() {
                           </button>
                         </li>
                       ))}
-                    <li className={`page-item ${pagination.currentPage === pagination.lastPage ? "disabled" : ""}`}>
+                    <li
+                      className={`page-item ${pagination.currentPage === pagination.lastPage ? "disabled" : ""}`}
+                    >
                       <button
                         className="page-link"
-                        onClick={() => handlePageChange(pagination.currentPage + 1)}
+                        onClick={() =>
+                          handlePageChange(pagination.currentPage + 1)
+                        }
                       >
                         Next
                       </button>
@@ -918,14 +1026,21 @@ export default function EnrollmentListManagement() {
 
       {/* Create/Edit Modal */}
       {showModal && (
-        <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+        <div
+          className="modal fade show d-block"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">
                   {modalMode === "create" ? "Add" : "Edit"} Enrollment Period
                 </h5>
-                <button type="button" className="btn-close" onClick={() => setShowModal(false)} />
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowModal(false)}
+                />
               </div>
               <form onSubmit={handleFormSubmit}>
                 <div className="modal-body">
@@ -937,14 +1052,18 @@ export default function EnrollmentListManagement() {
                     <select
                       className={`form-select ${formErrors.period ? "is-invalid" : ""}`}
                       value={formData.period}
-                      onChange={(e) => setFormData({ ...formData, period: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, period: e.target.value })
+                      }
                     >
                       <option value="1st Semester">1st Semester</option>
                       <option value="2nd Semester">2nd Semester</option>
                     </select>
                     {formErrors.period && (
                       <div className="invalid-feedback">
-                        {Array.isArray(formErrors.period) ? formErrors.period[0] : formErrors.period}
+                        {Array.isArray(formErrors.period)
+                          ? formErrors.period[0]
+                          : formErrors.period}
                       </div>
                     )}
                   </div>
@@ -957,7 +1076,12 @@ export default function EnrollmentListManagement() {
                     <select
                       className={`form-select ${formErrors.academic_year ? "is-invalid" : ""}`}
                       value={formData.academic_year}
-                      onChange={(e) => setFormData({ ...formData, academic_year: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          academic_year: e.target.value,
+                        })
+                      }
                     >
                       <option value="">Select academic year</option>
                       {yearOptions.map((yr) => (
@@ -968,7 +1092,9 @@ export default function EnrollmentListManagement() {
                     </select>
                     {formErrors.academic_year && (
                       <div className="invalid-feedback">
-                        {Array.isArray(formErrors.academic_year) ? formErrors.academic_year[0] : formErrors.academic_year}
+                        {Array.isArray(formErrors.academic_year)
+                          ? formErrors.academic_year[0]
+                          : formErrors.academic_year}
                       </div>
                     )}
                   </div>
@@ -988,7 +1114,10 @@ export default function EnrollmentListManagement() {
                     disabled={submitting}
                   >
                     {submitting && (
-                      <span className="spinner-border spinner-border-sm" role="status" />
+                      <span
+                        className="spinner-border spinner-border-sm"
+                        role="status"
+                      />
                     )}
                     {modalMode === "create" ? "Create" : "Update"}
                   </button>
@@ -1001,22 +1130,37 @@ export default function EnrollmentListManagement() {
 
       {/* Delete Modal */}
       {showDeleteModal && itemToDelete && (
-        <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+        <div
+          className="modal fade show d-block"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title text-danger">Delete Enrollment Period</h5>
-                <button type="button" className="btn-close" onClick={() => setShowDeleteModal(false)} />
+                <h5 className="modal-title text-danger">
+                  Delete Enrollment Period
+                </h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowDeleteModal(false)}
+                />
               </div>
               <div className="modal-body">
                 <p>
                   Are you sure you want to delete{" "}
-                  <strong>{itemToDelete.period} &mdash; {itemToDelete.academic_year}</strong>?
+                  <strong>
+                    {itemToDelete.period} &mdash; {itemToDelete.academic_year}
+                  </strong>
+                  ?
                 </p>
                 <p className="text-muted small">
-                  This will remove {itemToDelete.students_count ?? 0} student association(s).
+                  This will remove {itemToDelete.students_count ?? 0} student
+                  association(s).
                 </p>
-                <p className="text-danger small">This action cannot be undone.</p>
+                <p className="text-danger small">
+                  This action cannot be undone.
+                </p>
               </div>
               <div className="modal-footer">
                 <button
@@ -1032,7 +1176,10 @@ export default function EnrollmentListManagement() {
                   disabled={deleting}
                 >
                   {deleting && (
-                    <span className="spinner-border spinner-border-sm" role="status" />
+                    <span
+                      className="spinner-border spinner-border-sm"
+                      role="status"
+                    />
                   )}
                   Delete
                 </button>
