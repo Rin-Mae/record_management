@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('file_name');
             $table->string('file_type')->nullable();
             $table->unsignedBigInteger('file_size')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

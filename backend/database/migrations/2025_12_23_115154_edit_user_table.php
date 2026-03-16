@@ -23,6 +23,7 @@ return new class extends Migration
             $table->integer('contact_number');
             $table->string('gender');
             $table->string('role');
+            
         });
     }
 

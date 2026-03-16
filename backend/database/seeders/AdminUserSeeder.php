@@ -24,13 +24,13 @@ class AdminUserSeeder extends Seeder
         $user->email = 'mae@example.com';
         $user->password = bcrypt('mae123');
         $user->role = 'admin';
-        // Fill other required fields with sensible defaults for tests.
-        $user->middlename = null;
-        $user->age = 25;
-        $user->birthdate = '2000-01-01';
-        $user->address = 'Not set';
-        $user->contact_number = 0;
-        $user->gender = 'Not specified';
+        // // Fill other required fields with sensible defaults for tests.
+        // $user->middlename = null;
+        // $user->age = 25;
+        // $user->birthdate = '2000-01-01';
+        // $user->address = 'Not set';
+        // $user->contact_number = 0;
+        // $user->gender = 'Not specified';
 
         $user->save();
     }

@@ -20,6 +20,7 @@ return new class extends Migration
             $table->date('record_date')->nullable();
             $table->string('file_path')->nullable(); // for attachments
             $table->text('remarks')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

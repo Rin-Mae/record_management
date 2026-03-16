@@ -13,7 +13,7 @@ return new class extends Migration
             $table->enum('period', ['1st Semester', '2nd Semester']);
             $table->string('academic_year'); // e.g. "2025-2026"
             $table->timestamps();
-
+            $table->softDeletes();
             $table->unique(['period', 'academic_year']);
         });
 

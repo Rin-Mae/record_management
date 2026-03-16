@@ -26,6 +26,7 @@ return new class extends Migration
             $table->string('course')->nullable();
             $table->integer('year_level')->nullable();
             $table->enum('status', ['active', 'inactive', 'graduated', 'dropped'])->default('active');
+            $table->softDeletes();
             $table->timestamps();
         });
     }
