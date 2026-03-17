@@ -47,4 +47,13 @@ class Student extends Model
     {
         return $this->hasMany(StudentRecord::class);
     }
+
+    /**
+     * Enrollment periods where this student belongs.
+     */
+    public function enrollmentLists()
+    {
+        return $this->belongsToMany(EnrollmentList::class, 'enrollment_list_students')
+                    ->withTimestamps();
+    }
 }

@@ -47,6 +47,8 @@ function Students() {
     openEditModal,
     handleInputChange,
     handleSubmit,
+    enrollmentOptions,
+    loadingEnrollmentOptions,
 
     // View Modal
     showViewModal,
@@ -457,6 +459,32 @@ function Students() {
                         <option value="4">4th Year</option>
                         <option value="5">5th Year</option>
                       </select>
+                    </div>
+
+                    {/* Auto-enroll period on create */}
+                    <div className="col-md-4">
+                      <label className="form-label">Enrollment Period</label>
+                      <select
+                        className={`form-select ${formErrors.enrollment_list_id ? "is-invalid" : ""}`}
+                        name="enrollment_list_id"
+                        value={formData.enrollment_list_id || ""}
+                        onChange={handleInputChange}
+                        disabled={loadingEnrollmentOptions}
+                      >
+                        <option value="">--</option>
+                        {enrollmentOptions.map((enrollment) => (
+                          <option key={enrollment.id} value={enrollment.id}>
+                            {enrollment.period} - {enrollment.academic_year}
+                          </option>
+                        ))}
+                      </select>
+                      {formErrors.enrollment_list_id && (
+                        <div className="invalid-feedback">
+                          {Array.isArray(formErrors.enrollment_list_id)
+                            ? formErrors.enrollment_list_id[0]
+                            : formErrors.enrollment_list_id}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

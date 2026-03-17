@@ -90,9 +90,7 @@ export const COLLEGE_ITEMS = [
     match: /^\/admin\/college\/beed$/,
   },
   {
-    path: "/admin/college/bsed",
     label: "BSEd",
-    match: /^\/admin\/college\/bsed/,
     subItems: [
       {
         path: "/admin/college/bsed/math",
@@ -142,9 +140,7 @@ export const COLLEGE_ITEMS = [
     match: /^\/admin\/college\/abcom$/,
   },
   {
-    path: "/admin/college/bsba",
     label: "BSBA",
-    match: /^\/admin\/college\/bsba/,
     subItems: [
       {
         path: "/admin/college/bsba/financial-management",

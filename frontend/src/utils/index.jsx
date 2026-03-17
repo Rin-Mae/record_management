@@ -48,6 +48,7 @@ export const initialStudentForm = {
   email: "",
   course: "",
   year_level: "",
+  enrollment_list_id: "",
   section: "",
   guardian_name: "",
   guardian_contact: "",

@@ -3,6 +3,7 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../../contexts/AuthContext";
 import StudentServices from "../../services/StudentServices.jsx";
+import EnrollmentListServices from "../../services/EnrollmentListServices.jsx";
 import { getCourseInfo } from "./courseConfig.jsx";
 import {
   FiMenu,
@@ -53,6 +54,9 @@ function useCourseStudents(courseCode, courseLabel) {
   });
   const [formErrors, setFormErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+  const [enrollmentOptions, setEnrollmentOptions] = useState([]);
+  const [loadingEnrollmentOptions, setLoadingEnrollmentOptions] =
+    useState(false);
 
   // View modal state
   const [showViewModal, setShowViewModal] = useState(false);
@@ -114,6 +118,27 @@ function useCourseStudents(courseCode, courseLabel) {
     }
   }, [fetchStudents, courseCode]);
 
+  const fetchEnrollmentOptions = useCallback(async () => {
+    setLoadingEnrollmentOptions(true);
+    try {
+      const response = await EnrollmentListServices.getEnrollmentLists({
+        per_page: 100,
+      });
+
+      if (response.success) {
+        setEnrollmentOptions(response.data.data || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch enrollment options:", error);
+    } finally {
+      setLoadingEnrollmentOptions(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchEnrollmentOptions();
+  }, [fetchEnrollmentOptions]);
+
   // Handle search
   const handleSearch = (e) => {
     e.preventDefault();
@@ -174,6 +199,9 @@ function useCourseStudents(courseCode, courseLabel) {
         ...formData,
         age: formData.age ? parseInt(formData.age) : null,
         year_level: formData.year_level ? parseInt(formData.year_level) : null,
+        enrollment_list_id: formData.enrollment_list_id
+          ? parseInt(formData.enrollment_list_id)
+          : null,
         course: courseCode, // Always use the course from URL
       };
 
@@ -260,6 +288,8 @@ function useCourseStudents(courseCode, courseLabel) {
     openEditModal,
     handleInputChange,
     handleSubmit,
+    enrollmentOptions,
+    loadingEnrollmentOptions,
 
     // View Modal
     showViewModal,
@@ -339,6 +369,8 @@ export default function CourseStudents() {
     openEditModal,
     handleInputChange,
     handleSubmit,
+    enrollmentOptions,
+    loadingEnrollmentOptions,
     showViewModal,
     selectedStudent,
     openViewModal,
@@ -732,6 +764,30 @@ export default function CourseStudents() {
                         value={formData.address}
                         onChange={handleInputChange}
                       />
+                    </div>
+                    <div className="col-md-4">
+                      <label className="form-label">Enrollment Period</label>
+                      <select
+                        className={`form-select ${formErrors.enrollment_list_id ? "is-invalid" : ""}`}
+                        name="enrollment_list_id"
+                        value={formData.enrollment_list_id || ""}
+                        onChange={handleInputChange}
+                        disabled={loadingEnrollmentOptions}
+                      >
+                        <option value="">--</option>
+                        {enrollmentOptions.map((enrollment) => (
+                          <option key={enrollment.id} value={enrollment.id}>
+                            {enrollment.period} - {enrollment.academic_year}
+                          </option>
+                        ))}
+                      </select>
+                      {formErrors.enrollment_list_id && (
+                        <div className="invalid-feedback">
+                          {Array.isArray(formErrors.enrollment_list_id)
+                            ? formErrors.enrollment_list_id[0]
+                            : formErrors.enrollment_list_id}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

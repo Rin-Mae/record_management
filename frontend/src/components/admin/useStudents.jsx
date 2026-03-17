@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../../contexts/AuthContext";
 import StudentServices from "../../services/StudentServices.jsx";
+import EnrollmentListServices from "../../services/EnrollmentListServices.jsx";
 import {
   getGenderDisplay,
   formatDate,
@@ -37,6 +38,9 @@ export function useStudents() {
   const [formData, setFormData] = useState(initialStudentForm);
   const [formErrors, setFormErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+  const [enrollmentOptions, setEnrollmentOptions] = useState([]);
+  const [loadingEnrollmentOptions, setLoadingEnrollmentOptions] =
+    useState(false);
 
   // View modal state
   const [showViewModal, setShowViewModal] = useState(false);
@@ -94,6 +98,28 @@ export function useStudents() {
   useEffect(() => {
     fetchStudents();
   }, [fetchStudents]);
+
+  // Fetch enrollment periods for the "auto-enroll on create" dropdown.
+  const fetchEnrollmentOptions = useCallback(async () => {
+    setLoadingEnrollmentOptions(true);
+    try {
+      const response = await EnrollmentListServices.getEnrollmentLists({
+        per_page: 100,
+      });
+
+      if (response.success) {
+        setEnrollmentOptions(response.data.data || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch enrollment options:", error);
+    } finally {
+      setLoadingEnrollmentOptions(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchEnrollmentOptions();
+  }, [fetchEnrollmentOptions]);
 
   // Handle search
   const handleSearch = useCallback(
@@ -158,6 +184,9 @@ export function useStudents() {
           age: formData.age ? parseInt(formData.age) : null,
           year_level: formData.year_level
             ? parseInt(formData.year_level)
+            : null,
+          enrollment_list_id: formData.enrollment_list_id
+            ? parseInt(formData.enrollment_list_id)
             : null,
         };
 
@@ -249,6 +278,8 @@ export function useStudents() {
     openEditModal,
     handleInputChange,
     handleSubmit,
+    enrollmentOptions,
+    loadingEnrollmentOptions,
 
     // View Modal
     showViewModal,
