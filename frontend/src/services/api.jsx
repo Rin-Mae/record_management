@@ -12,7 +12,7 @@ function getCookie(name) {
 
 const api = axios.create({
   baseURL: API_URL,
-  withCredentials: true,
+  withCredentials: true, // IMPORTANT: Send cookies with every request
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -22,28 +22,38 @@ const api = axios.create({
 // Track if we've fetched CSRF cookie this session
 let csrfInitialized = false;
 
+// Initialize CSRF on first API call to establish session
+async function initializeCsrf() {
+  if (csrfInitialized) return;
+
+  try {
+    console.log("Initializing CSRF cookie...");
+    await axios.get(`${API_URL}/sanctum/csrf-cookie`, {
+      withCredentials: true,
+    });
+    csrfInitialized = true;
+    console.log("CSRF cookie initialized");
+  } catch (e) {
+    console.warn("CSRF cookie fetch failed:", e.message);
+  }
+}
+
 // Request interceptor for CSRF token
 api.interceptors.request.use(
   async (config) => {
-    // Get CSRF cookie once for mutation requests
-    if (["post", "put", "patch", "delete"].includes(config.method)) {
-      if (!csrfInitialized) {
-        try {
-          await axios.get(`${API_URL}/sanctum/csrf-cookie`, {
-            withCredentials: true,
-          });
-          csrfInitialized = true;
-        } catch (e) {
-          console.warn("CSRF cookie fetch failed:", e);
-        }
-      }
+    // Ensure CSRF cookie is fetched on first request
+    if (!csrfInitialized) {
+      await initializeCsrf();
+    }
 
-      // Read XSRF token from cookie and add to header
+    // Add XSRF token header for mutation requests
+    if (["post", "put", "patch", "delete"].includes(config.method)) {
       const token = getCookie("XSRF-TOKEN");
       if (token) {
         config.headers["X-XSRF-TOKEN"] = decodeURIComponent(token);
       }
     }
+
     return config;
   },
   (error) => Promise.reject(error),
@@ -53,11 +63,10 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Log 401 errors but don't auto-logout
+    // Let each component handle auth errors appropriately
     if (error.response?.status === 401) {
-      // Clear user state on unauthorized
-      if (typeof window !== "undefined") {
-        window.__appUser = null;
-      }
+      console.warn("401 Unauthorized - request failed:", error.config?.url);
     }
     return Promise.reject(error);
   },

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../../contexts/AuthContext";
 import StudentServices from "../../services/StudentServices.jsx";
+import CourseServices from "../../services/CourseServices.jsx";
 import {
   getGenderDisplay,
   formatDate,
@@ -28,8 +29,14 @@ export function useStudents() {
     perPage: 10,
   });
 
+  // Courses state
+  const [courses, setCourses] = useState([]);
+  const [loadingCourses, setLoadingCourses] = useState(true);
+
   // Search and filter state
   const [search, setSearch] = useState("");
+  const [courseFilter, setCourseFilter] = useState("");
+  const [yearLevelFilter, setYearLevelFilter] = useState("");
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -70,6 +77,8 @@ export function useStudents() {
           page,
           per_page: pagination.perPage,
           search: search || undefined,
+          course: courseFilter || undefined,
+          year_level: yearLevelFilter || undefined,
         };
         const response = await StudentServices.getStudents(params);
         if (response.success) {
@@ -88,12 +97,32 @@ export function useStudents() {
         setLoading(false);
       }
     },
-    [search, pagination.perPage],
+    [search, courseFilter, yearLevelFilter, pagination.perPage],
   );
 
   useEffect(() => {
     fetchStudents();
   }, [fetchStudents]);
+
+  // Fetch all courses for dropdown
+  const fetchCourses = useCallback(async () => {
+    setLoadingCourses(true);
+    try {
+      const response = await CourseServices.getAllCourses();
+      if (response.success) {
+        setCourses(response.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch courses:", error);
+    } finally {
+      setLoadingCourses(false);
+    }
+  }, []);
+
+  // Fetch courses on mount
+  useEffect(() => {
+    fetchCourses();
+  }, [fetchCourses]);
 
   // Handle search
   const handleSearch = useCallback(
@@ -233,9 +262,17 @@ export function useStudents() {
     loading,
     pagination,
 
+    // Courses
+    courses,
+    loadingCourses,
+
     // Search & Filter
     search,
     setSearch,
+    courseFilter,
+    setCourseFilter,
+    yearLevelFilter,
+    setYearLevelFilter,
     handleSearch,
 
     // Create/Edit Modal

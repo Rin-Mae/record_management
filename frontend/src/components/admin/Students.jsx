@@ -31,9 +31,17 @@ function Students() {
     loading,
     pagination,
 
+    // Courses
+    courses,
+    loadingCourses,
+
     // Search & Filter
     search,
     setSearch,
+    courseFilter,
+    setCourseFilter,
+    yearLevelFilter,
+    setYearLevelFilter,
     handleSearch,
 
     // Create/Edit Modal
@@ -106,7 +114,7 @@ function Students() {
           <div className="card mb-4">
             <div className="card-body">
               <form onSubmit={handleSearch} className="row g-3">
-                <div className="col-md-10">
+                <div className="col-md-6">
                   <div className="input-group">
                     <span className="input-group-text">
                       <FiSearch />
@@ -120,10 +128,88 @@ function Students() {
                     />
                   </div>
                 </div>
+
+                {/* Course Filter */}
+                <div className="col-md-4">
+                  <select
+                    className="form-select"
+                    value={courseFilter}
+                    onChange={(e) => setCourseFilter(e.target.value)}
+                  >
+                    <option value="">All Courses</option>
+                    <optgroup label="Basic Education">
+                      <option value="Elementary">Elementary</option>
+                      <option value="Junior Highschool">
+                        Junior High School
+                      </option>
+                      <option value="Senior Highschool">
+                        Senior High School
+                      </option>
+                    </optgroup>
+                    <optgroup label="Undergraduate">
+                      <option value="BSIT">BSIT</option>
+                      <option value="BSCS">BSCS</option>
+                      <option value="BSGE">BSGE</option>
+                      <option value="BSA">BSA</option>
+                      <option value="BEEd">BEEd</option>
+                      <option value="BSCrim">BSCrim</option>
+                      <option value="BSN">BSN</option>
+                      <option value="AB PolSci">AB PolSci</option>
+                      <option value="AB English">AB English</option>
+                      <option value="ABCom">ABCom</option>
+                      <option value="BSMA">BSMA</option>
+                      <option value="BSHM">BSHM</option>
+                    </optgroup>
+                    <optgroup label="BSEd - Majors">
+                      <option value="BSEd">BSEd (All)</option>
+                      <option value="BSEd - Math">BSEd - Major in Math</option>
+                      <option value="BSEd - English">
+                        BSEd - Major in English
+                      </option>
+                      <option value="BSEd - Filipino">
+                        BSEd - Major in Filipino
+                      </option>
+                      <option value="BSEd - Science">
+                        BSEd - Major in Science
+                      </option>
+                    </optgroup>
+                    <optgroup label="BSBA - Majors">
+                      <option value="BSBA">BSBA (All)</option>
+                      <option value="BSBA - FM">
+                        BSBA - Financial Management
+                      </option>
+                      <option value="BSBA - MM">
+                        BSBA - Marketing Management
+                      </option>
+                      <option value="BSBA - HRM">
+                        BSBA - Human Resource Management
+                      </option>
+                    </optgroup>
+                    <optgroup label="Graduate Degrees">
+                      <option value="Ph.D">Ph.D</option>
+                      <option value="Ed.D">Ed.D</option>
+                      <option value="MA.Ed">MA.Ed</option>
+                      <option value="MA.Ed - L.L">MA.Ed - L.L</option>
+                      <option value="MPA">MPA</option>
+                      <option value="MBA">MBA</option>
+                    </optgroup>
+                  </select>
+                </div>
+
+                {/* Year Level Filter */}
                 <div className="col-md-2">
-                  <button type="submit" className="btn btn-success w-100">
-                    Search
-                  </button>
+                  <select
+                    className="form-select"
+                    value={yearLevelFilter}
+                    onChange={(e) => setYearLevelFilter(e.target.value)}
+                  >
+                    <option value="">All Years</option>
+                    <option value="1">1st Year</option>
+                    <option value="2">2nd Year</option>
+                    <option value="3">3rd Year</option>
+                    <option value="4">4th Year</option>
+                    <option value="5">5th Year</option>
+                  </select>
                 </div>
               </form>
             </div>
@@ -431,14 +517,20 @@ function Students() {
                     {/* Course */}
                     <div className="col-md-4">
                       <label className="form-label">Course</label>
-                      <input
-                        type="text"
-                        className="form-control"
+                      <select
+                        className="form-select"
                         name="course"
                         value={formData.course}
                         onChange={handleInputChange}
-                        placeholder="e.g., BSIT, BSCS"
-                      />
+                        disabled={loadingCourses}
+                      >
+                        <option value="">Select Course</option>
+                        {courses.map((course) => (
+                          <option key={course.id} value={course.code}>
+                            {course.code} - {course.name}
+                          </option>
+                        ))}
+                      </select>
                     </div>
 
                     {/* Year Level */}
@@ -706,17 +798,6 @@ function Students() {
                 </div>
               </div>
               <div className="modal-footer border-0">
-                <button
-                  type="button"
-                  className="btn btn-info text-white"
-                  onClick={() => {
-                    closeViewModal();
-                    navigate(`/admin/students/${selectedStudent.id}/records`);
-                  }}
-                >
-                  <FiFileText className="me-2" size={16} />
-                  View Records
-                </button>
                 <button
                   type="button"
                   className="btn btn-success"
