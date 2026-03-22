@@ -8,7 +8,6 @@ import {
   FiMenu,
   FiPlus,
   FiEdit2,
-  FiTrash2,
   FiSearch,
   FiFileText,
   FiUpload,
@@ -18,7 +17,6 @@ import {
   FiX,
   FiFile,
   FiImage,
-  FiEye,
 } from "react-icons/fi";
 import Sidebar from "../adminLayout/Sidebar";
 import { formatDate } from "../../utils/index.jsx";
@@ -125,11 +123,6 @@ export default function RecordManagement() {
   // View modal
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
-
-  // Delete modal
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [recordToDelete, setRecordToDelete] = useState(null);
-  const [deleting, setDeleting] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -446,33 +439,6 @@ export default function RecordManagement() {
     setShowViewModal(true);
   };
 
-  // Delete record
-  const handleDeleteClick = (record) => {
-    setRecordToDelete(record);
-    setShowDeleteModal(true);
-  };
-
-  const confirmDelete = async () => {
-    if (!recordToDelete) return;
-    setDeleting(true);
-    try {
-      const response = await StudentRecordServices.deleteRecordByType(
-        recordToDelete.record_type,
-        recordToDelete.id,
-      );
-      if (response.success) {
-        toast.success("Record deleted successfully");
-        setShowDeleteModal(false);
-        setRecordToDelete(null);
-        fetchRecords(pagination.currentPage);
-      }
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to delete record");
-    } finally {
-      setDeleting(false);
-    }
-  };
-
   // Download file
   const handleDownload = (url) => {
     if (url) {
@@ -681,22 +647,13 @@ export default function RecordManagement() {
                             </small>
                           </td>
                           <td>
-                            <div className="d-flex gap-1">
-                              <button
-                                className="btn btn-sm btn-outline-warning"
-                                onClick={() => openEditModal(record)}
-                                title="Edit"
-                              >
-                                <FiEdit2 size={14} />
-                              </button>
-                              <button
-                                className="btn btn-sm btn-outline-danger"
-                                onClick={() => handleDeleteClick(record)}
-                                title="Delete"
-                              >
-                                <FiTrash2 size={14} />
-                              </button>
-                            </div>
+                            <button
+                              className="btn btn-sm btn-outline-warning"
+                              onClick={() => openEditModal(record)}
+                              title="Edit"
+                            >
+                              <FiEdit2 size={14} />
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -1284,70 +1241,6 @@ export default function RecordManagement() {
                   onClick={() => setShowViewModal(false)}
                 >
                   Close
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && recordToDelete && (
-        <div
-          className="modal fade show d-block"
-          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-        >
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title text-danger">Delete Record</h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setShowDeleteModal(false)}
-                />
-              </div>
-              <div className="modal-body">
-                <p>
-                  Are you sure you want to delete this{" "}
-                  <strong>{typeConfig.short}</strong> record?
-                </p>
-                {recordToDelete.student && (
-                  <p className="text-muted small">
-                    Student: {recordToDelete.student.firstname}{" "}
-                    {recordToDelete.student.lastname} (
-                    {recordToDelete.student.student_id})
-                  </p>
-                )}
-                {recordToDelete.files && recordToDelete.files.length > 0 && (
-                  <p className="text-muted small">
-                    {recordToDelete.files.length} file(s) will be deleted.
-                  </p>
-                )}
-                <p className="text-danger small">
-                  This action cannot be undone.
-                </p>
-              </div>
-              <div className="modal-footer">
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => setShowDeleteModal(false)}
-                  disabled={deleting}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="btn btn-danger d-flex align-items-center gap-2"
-                  onClick={confirmDelete}
-                  disabled={deleting}
-                >
-                  {deleting && (
-                    <span
-                      className="spinner-border spinner-border-sm"
-                      role="status"
-                    />
-                  )}
-                  Delete
                 </button>
               </div>
             </div>

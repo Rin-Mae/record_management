@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StudentRecord extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -36,7 +37,6 @@ class StudentRecord extends Model
         'psa' => 'PSA',
         'comprehensive-exam' => 'Comprehensive Exam',
         'diploma' => 'Diploma',
-        'enrollment-list' => 'Enrollment List',
     ];
 
     /**
@@ -44,7 +44,7 @@ class StudentRecord extends Model
      * All types now use this form.
      */
     public const SIMPLIFIED_TYPES = [
-        'tor', 'special-order', 'psa', 'comprehensive-exam', 'diploma', 'enrollment-list',
+        'tor', 'special-order', 'psa', 'comprehensive-exam', 'diploma',
     ];
 
     /**

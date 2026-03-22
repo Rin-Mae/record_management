@@ -6,33 +6,23 @@ import {
   FiUsers,
   FiChevronDown,
   FiChevronRight,
-  FiBook,
-  FiAward,
-  FiBookOpen,
   FiFolder,
+  FiBook,
+  FiActivity,
 } from "react-icons/fi";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { toast } from "react-toastify";
-import {
-  useSidebar,
-  NAV_ITEMS,
-  BASIC_EDUCATION_ITEMS,
-  COLLEGE_ITEMS,
-  GRADUATE_ITEMS,
-  RECORDS_MANAGEMENT_ITEMS,
-  isPathActive,
-} from "./sidebarUtils.jsx";
+import { useSidebar, NAV_ITEMS, isPathActive } from "./sidebarUtils.jsx";
 import "./Sidebar.css";
 
 // Icon mapping - only icons actually used
 const ICONS = {
   FiHome,
   FiUsers,
-  FiBook,
-  FiAward,
-  FiBookOpen,
   FiFolder,
+  FiBook,
+  FiActivity,
 };
 
 // Collapsible Menu Item Component
@@ -363,42 +353,6 @@ export default function Sidebar({ visible, onClose, user, onLogout }) {
               </li>
             );
           })}
-
-          {/* Basic Education Center */}
-          <CollapsibleMenuItem
-            label="Basic Education"
-            icon={FiBook}
-            items={BASIC_EDUCATION_ITEMS}
-            pathname={pathname}
-            navigate={navigate}
-          />
-
-          {/* College Degree */}
-          <CollapsibleMenuItem
-            label="College"
-            icon={FiBookOpen}
-            items={COLLEGE_ITEMS}
-            pathname={pathname}
-            navigate={navigate}
-          />
-
-          {/* Post Graduate */}
-          <CollapsibleMenuItem
-            label="Graduate"
-            icon={FiAward}
-            items={GRADUATE_ITEMS}
-            pathname={pathname}
-            navigate={navigate}
-          />
-
-          {/* Records Management */}
-          <CollapsibleMenuItem
-            label="Records Management"
-            icon={FiFolder}
-            items={RECORDS_MANAGEMENT_ITEMS}
-            pathname={pathname}
-            navigate={navigate}
-          />
         </ul>
       </nav>
 

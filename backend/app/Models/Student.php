@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Student extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -46,14 +47,5 @@ class Student extends Model
     public function records()
     {
         return $this->hasMany(StudentRecord::class);
-    }
-
-    /**
-     * Enrollment periods where this student belongs.
-     */
-    public function enrollmentLists()
-    {
-        return $this->belongsToMany(EnrollmentList::class, 'enrollment_list_students')
-                    ->withTimestamps();
     }
 }

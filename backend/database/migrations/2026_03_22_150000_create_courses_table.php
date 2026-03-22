@@ -11,13 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('record_files', function (Blueprint $table) {
+        Schema::create('courses', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('student_record_id')->constrained('student_records')->onDelete('cascade');
-            $table->string('file_path');
-            $table->string('file_name');
-            $table->string('file_type')->nullable();
-            $table->unsignedBigInteger('file_size')->nullable();
+            $table->string('code')->unique();
+            $table->string('name');
+            $table->string('department')->nullable();
+            $table->text('description')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });
@@ -28,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('record_files');
+        Schema::dropIfExists('courses');
     }
 };

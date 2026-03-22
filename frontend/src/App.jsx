@@ -5,16 +5,24 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 
 // Lazy load components for better initial load performance
 const Login = lazy(() => import("./components/Login"));
+const Home = lazy(() => import("./components/Home"));
 const AdminDashboard = lazy(() => import("./components/admin/AdminDashboard"));
 const Students = lazy(() => import("./components/admin/Students"));
 const Users = lazy(() => import("./components/admin/Users"));
+const Courses = lazy(() => import("./components/admin/Courses"));
 const CourseStudents = lazy(() => import("./components/admin/CourseStudents"));
 const RecordManagement = lazy(
   () => import("./components/admin/RecordManagement"),
 );
-const EnrollmentListManagement = lazy(
-  () => import("./components/admin/EnrollmentListManagement"),
+const ActivityLogs = lazy(() => import("./components/admin/ActivityLogs"));
+// Staff Components
+const StaffDashboard = lazy(() => import("./components/staff/StaffDashboard"));
+const StaffStudents = lazy(() => import("./components/staff/Students"));
+const StaffCourses = lazy(() => import("./components/staff/Courses"));
+const StaffRecordManagement = lazy(
+  () => import("./components/staff/RecordManagement"),
 );
+// Enrollment list UI removed
 
 // Loading spinner component
 function LoadingSpinner() {
@@ -53,6 +61,32 @@ function AdminRoute({ children }) {
   return children;
 }
 
+// Protected route component for staff
+function StaffRoute({ children }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="spinner-border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const roles = user?.roles || [];
+  if (!roles.includes("staff")) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+}
+
 function App() {
   return (
     <AuthProvider>
@@ -69,6 +103,7 @@ function App() {
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/" element={<Home />} />
             <Route
               path="/admin/dashboard"
               element={
@@ -93,13 +128,23 @@ function App() {
                 </AdminRoute>
               }
             />
-
-            {/* Enrollment List (separate component) */}
             <Route
-              path="/admin/records/enrollment-list"
+              path="/admin/courses"
               element={
                 <AdminRoute>
-                  <EnrollmentListManagement />
+                  <Courses />
+                </AdminRoute>
+              }
+            />
+
+            {/* Enrollment List UI removed */}
+
+            {/* Records Management - Unified all records view */}
+            <Route
+              path="/admin/records"
+              element={
+                <AdminRoute>
+                  <RecordManagement />
                 </AdminRoute>
               }
             />
@@ -110,6 +155,16 @@ function App() {
               element={
                 <AdminRoute>
                   <RecordManagement />
+                </AdminRoute>
+              }
+            />
+
+            {/* Activity Logs */}
+            <Route
+              path="/admin/activity-logs"
+              element={
+                <AdminRoute>
+                  <ActivityLogs />
                 </AdminRoute>
               }
             />
@@ -153,6 +208,50 @@ function App() {
                 <AdminRoute>
                   <CourseStudents />
                 </AdminRoute>
+              }
+            />
+
+            {/* Staff Routes */}
+            <Route
+              path="/staff/dashboard"
+              element={
+                <StaffRoute>
+                  <StaffDashboard />
+                </StaffRoute>
+              }
+            />
+            <Route
+              path="/staff/students"
+              element={
+                <StaffRoute>
+                  <StaffStudents />
+                </StaffRoute>
+              }
+            />
+            <Route
+              path="/staff/courses"
+              element={
+                <StaffRoute>
+                  <StaffCourses />
+                </StaffRoute>
+              }
+            />
+            {/* Unified Records View */}
+            <Route
+              path="/staff/records"
+              element={
+                <StaffRoute>
+                  <StaffRecordManagement />
+                </StaffRoute>
+              }
+            />
+            {/* Type-specific Records View */}
+            <Route
+              path="/staff/records/:recordType"
+              element={
+                <StaffRoute>
+                  <StaffRecordManagement />
+                </StaffRoute>
               }
             />
 

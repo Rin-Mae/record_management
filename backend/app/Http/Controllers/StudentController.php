@@ -33,6 +33,11 @@ class StudentController extends Controller
             $query->where('course', $request->course);
         }
 
+        // Filter by year level
+        if ($request->has('year_level') && $request->year_level) {
+            $query->where('year_level', $request->year_level);
+        }
+
         // Sorting
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
