@@ -24,9 +24,11 @@ return [
         'users/*',
         'students',
         'students/*',
+        'courses',
+        'courses/*',
         'records/*',
-        'enrollment-lists',
-        'enrollment-lists/*',
+        'activity-logs',
+        'activity-logs/*',
         'dashboard/*',
     ],
 

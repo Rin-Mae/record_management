@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Providers;
+use App\Models\User;
 use App\Models\Student;
 use App\Models\StudentRecord;
 use App\Models\RecordFile;

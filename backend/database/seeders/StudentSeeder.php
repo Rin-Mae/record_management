@@ -57,7 +57,6 @@ class StudentSeeder extends Seeder
         $streets = ['Main St', 'Oak Ave', 'Pine Rd', 'Elm St', 'Maple Dr', 'Cedar Ln', 'Birch Ave', 'Willow St', 'Spruce Rd', 'Aspen Way'];
         $cities = ['Manila', 'Quezon City', 'Makati', 'Pasig', 'Taguig', 'Mandaluyong', 'Paranaque', 'Las Pinas', 'Muntinlupa', 'Caloocan', 'Valenzuela', 'Malabon', 'Navotas', 'Pasay', 'San Juan', 'Marikina'];
 
-        $statuses = ['active', 'active', 'active', 'active', 'active', 'inactive', 'graduated', 'dropped'];
         $genders = ['male', 'female'];
 
         $students = [];
@@ -124,14 +123,6 @@ class StudentSeeder extends Seeder
                 $birthDay = str_pad(rand(1, 28), 2, '0', STR_PAD_LEFT);
                 $birthdate = "$birthYear-$birthMonth-$birthDay";
 
-                // Status based on year level
-                $status = 'active';
-                if ($yearLevel >= 4 && !in_array($course, ['ELEM', 'JHS']) && !str_starts_with($course, 'SHS')) {
-                    $status = $statuses[array_rand($statuses)];
-                } elseif ($yearsEnrolled > 4) {
-                    $status = rand(0, 1) ? 'graduated' : 'inactive';
-                }
-
                 $streetNum = rand(100, 999);
                 $street = $streets[array_rand($streets)];
                 $city = $cities[array_rand($cities)];
@@ -152,7 +143,6 @@ class StudentSeeder extends Seeder
                     'gender' => $genders[array_rand($genders)],
                     'course' => $course,
                     'year_level' => $yearLevel,
-                    'status' => $status,
                 ];
             }
         }

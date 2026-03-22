@@ -17,7 +17,9 @@ class DatabaseSeeder extends Seeder
         // Seed the initial admin user for authentication tests.
         $this->call([
             AdminUserSeeder::class,
+            StaffUserSeeder::class,
             StudentSeeder::class,
+            StudentRecordSeeder::class,
         ]);
     }
 }
