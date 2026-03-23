@@ -615,7 +615,7 @@ export default function RecordManagement() {
                   <FiFileText size={48} className="text-muted mb-3" />
                   <h5 className="text-muted">No records found</h5>
                   <p className="text-muted">
-                    {search
+                    {studentSearch
                       ? "Try adjusting your search terms"
                       : `No ${typeConfig.short.toLowerCase()} records have been added yet`}
                   </p>
