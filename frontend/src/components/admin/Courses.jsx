@@ -304,10 +304,10 @@ export default function Courses() {
                       }}
                     >
                       <option value="">All Departments</option>
-                      <option value="Basic education center">
+                      <option value="Basic Education Center">
                         Basic Education Center
                       </option>
-                      <option value="college">College</option>
+                      <option value="College">College</option>
                       <option value="Graduate">Graduate</option>
                     </select>
                   </div>
@@ -514,14 +514,19 @@ export default function Courses() {
 
                   <div className="mb-3">
                     <label className="form-label fw-semibold">Department</label>
-                    <input
-                      type="text"
-                      className={`form-control ${formErrors.department ? "is-invalid" : ""}`}
+                    <select
+                      className={`form-select ${formErrors.department ? "is-invalid" : ""}`}
                       name="department"
                       value={formData.department}
                       onChange={handleInputChange}
-                      placeholder="e.g., College, Basic Education Center"
-                    />
+                    >
+                      <option value="">Select Department</option>
+                      <option value="Basic Education Center">
+                        Basic Education Center
+                      </option>
+                      <option value="College">College</option>
+                      <option value="Graduate">Graduate</option>
+                    </select>
                     {formErrors.department && (
                       <div className="invalid-feedback d-block">
                         {formErrors.department}

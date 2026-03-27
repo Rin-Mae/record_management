@@ -18,6 +18,19 @@ import { useStudents, getGenderDisplay, formatDate } from "./useStudents.jsx";
 import { validateSpecialCharacters } from "../../utils/validation.js";
 import { toast } from "react-toastify";
 
+// Helper function to group courses by department
+const groupCoursesByDepartment = (courses) => {
+  const grouped = {};
+  courses.forEach((course) => {
+    const department = course.department || "Other";
+    if (!grouped[department]) {
+      grouped[department] = [];
+    }
+    grouped[department].push(course);
+  });
+  return grouped;
+};
+
 function Students() {
   const navigate = useNavigate();
   const {
@@ -151,112 +164,21 @@ function Students() {
                     onChange={(e) => setCourseFilter(e.target.value)}
                   >
                     <option value="">All Courses</option>
-                    <optgroup label="Basic Education Center">
-                      <option value="Elementary">Elementary School</option>
-                      <option value="Junior Highschool">
-                        Junior Highschool
-                      </option>
-                      <option disabled>
-                        —— Senior Highschool - Academic Track ——
-                      </option>
-                      <option value="ABM">
-                        Accountancy and Business Management (ABM)
-                      </option>
-                      <option value="STEM">
-                        Science Technology Engineering and Mathematics (STEM)
-                      </option>
-                      <option value="HUMSS">
-                        Humanities and Social Science (HUMSS)
-                      </option>
-                      <option disabled>
-                        —— Senior Highschool - Technical & Vocational Track ——
-                      </option>
-                      <option value="HE">Home Economics (HE)</option>
-                      <option value="ICT">
-                        Information and Communication Technology (ICT)
-                      </option>
-                    </optgroup>
-                    <optgroup label="College Degree">
-                      <option value="BSGE">
-                        Bachelor of Science in Geodetic Engineering (BSGE)
-                      </option>
-                      <option value="BSA">
-                        Bachelor of Science in Accountancy (BSA)
-                      </option>
-                      <option value="BEEd">
-                        Bachelor of Elementary Education (BEEd)
-                      </option>
-                      <option disabled>
-                        —— Bachelor of Secondary Education (BSEd) ——
-                      </option>
-                      <option value="BSEd">BSEd (All Majors)</option>
-                      <option value="BSEd - Math">BSEd - Major in Math</option>
-                      <option value="BSEd - English">
-                        BSEd - Major in English
-                      </option>
-                      <option value="BSEd - Filipino">
-                        BSEd - Major in Filipino
-                      </option>
-                      <option value="BSEd - Science">
-                        BSEd - Major in Science
-                      </option>
-                      <option value="BSCrim">
-                        Bachelor of Science in Criminology (BSCrim)
-                      </option>
-                      <option value="BSN">
-                        Bachelor of Science in Nursing (BSN)
-                      </option>
-                      <option value="AB PolSci">
-                        Bachelor of Arts in Political Science (AB PolSci)
-                      </option>
-                      <option value="AB English">
-                        Bachelor of Arts in English Language Studies (AB
-                        English)
-                      </option>
-                      <option value="ABCom">
-                        Bachelor of Arts in Communication (ABCom)
-                      </option>
-                      <option disabled>
-                        —— Bachelor of Science in Business Administration (BSBA)
-                        ——
-                      </option>
-                      <option value="BSBA">BSBA (All Majors)</option>
-                      <option value="BSBA - FM">
-                        BSBA - Major in Financial Management
-                      </option>
-                      <option value="BSBA - MM">
-                        BSBA - Major in Marketing Management
-                      </option>
-                      <option value="BSBA - MA">
-                        BSBA - Major in Management Accounting
-                      </option>
-                      <option value="BSBA - HRM">
-                        BSBA - Major in Human Resource Management
-                      </option>
-                      <option value="BSIT">
-                        Bachelor of Science in Information Technology (BSIT)
-                      </option>
-                      <option value="BSHM">
-                        Bachelor of Science in Hospitality Management (BSHM)
-                      </option>
-                    </optgroup>
-                    <optgroup label="Graduate Programs">
-                      <option value="Ph.D">Doctor of Philosophy (Ph.D)</option>
-                      <option value="Ed.D">Doctor of Education (Ed.D)</option>
-                      <option value="MA.Ed">
-                        Master of Arts in Education (MA.Ed)
-                      </option>
-                      <option value="MA.Ed-LL">
-                        Master of Arts in Education Major in Language and
-                        Literature (MA.Ed-L.L)
-                      </option>
-                      <option value="MPA">
-                        Master in Public Administration (MPA)
-                      </option>
-                      <option value="MBA">
-                        Master in Business Administration (MBA)
-                      </option>
-                    </optgroup>
+                    {loadingCourses ? (
+                      <option disabled>Loading courses...</option>
+                    ) : (
+                      Object.entries(groupCoursesByDepartment(courses)).map(
+                        ([department, departmentCourses]) => (
+                          <optgroup key={department} label={department}>
+                            {departmentCourses.map((course) => (
+                              <option key={course.id} value={course.code}>
+                                {course.name}
+                              </option>
+                            ))}
+                          </optgroup>
+                        ),
+                      )
+                    )}
                   </select>
                 </div>
 
@@ -588,120 +510,21 @@ function Students() {
                         onChange={handleInputChange}
                       >
                         <option value="">Select Course</option>
-                        <optgroup label="Basic Education Center">
-                          <option value="Elementary">Elementary School</option>
-                          <option value="Junior Highschool">
-                            Junior Highschool
-                          </option>
-                          <option disabled>
-                            —— Senior Highschool - Academic Track ——
-                          </option>
-                          <option value="ABM">
-                            Accountancy and Business Management (ABM)
-                          </option>
-                          <option value="STEM">
-                            Science Technology Engineering and Mathematics
-                            (STEM)
-                          </option>
-                          <option value="HUMSS">
-                            Humanities and Social Science (HUMSS)
-                          </option>
-                          <option disabled>
-                            —— Senior Highschool - Technical & Vocational Track
-                            ——
-                          </option>
-                          <option value="HE">Home Economics (HE)</option>
-                          <option value="ICT">
-                            Information and Communication Technology (ICT)
-                          </option>
-                        </optgroup>
-                        <optgroup label="College Degree">
-                          <option value="BSGE">
-                            Bachelor of Science in Geodetic Engineering (BSGE)
-                          </option>
-                          <option value="BSA">
-                            Bachelor of Science in Accountancy (BSA)
-                          </option>
-                          <option value="BEEd">
-                            Bachelor of Elementary Education (BEEd)
-                          </option>
-                          <option disabled>
-                            —— Bachelor of Secondary Education (BSEd) ——
-                          </option>
-                          <option value="BSEd">BSEd (All Majors)</option>
-                          <option value="BSEd - Math">
-                            BSEd - Major in Math
-                          </option>
-                          <option value="BSEd - English">
-                            BSEd - Major in English
-                          </option>
-                          <option value="BSEd - Filipino">
-                            BSEd - Major in Filipino
-                          </option>
-                          <option value="BSEd - Science">
-                            BSEd - Major in Science
-                          </option>
-                          <option value="BSCrim">
-                            Bachelor of Science in Criminology (BSCrim)
-                          </option>
-                          <option value="BSN">
-                            Bachelor of Science in Nursing (BSN)
-                          </option>
-                          <option value="AB PolSci">
-                            Bachelor of Arts in Political Science (AB PolSci)
-                          </option>
-                          <option value="AB English">
-                            Bachelor of Arts in English Language Studies (AB
-                            English)
-                          </option>
-                          <option value="ABCom">
-                            Bachelor of Arts in Communication (ABCom)
-                          </option>
-                          <option disabled>
-                            —— Bachelor of Science in Business Administration
-                            (BSBA) ——
-                          </option>
-                          <option value="BSBA">BSBA (All Majors)</option>
-                          <option value="BSBA - FM">
-                            BSBA - Major in Financial Management
-                          </option>
-                          <option value="BSBA - MM">
-                            BSBA - Major in Marketing Management
-                          </option>
-                          <option value="BSBA - MA">
-                            BSBA - Major in Management Accounting
-                          </option>
-                          <option value="BSBA - HRM">
-                            BSBA - Major in Human Resource Management
-                          </option>
-                          <option value="BSIT">
-                            Bachelor of Science in Information Technology (BSIT)
-                          </option>
-                          <option value="BSHM">
-                            Bachelor of Science in Hospitality Management (BSHM)
-                          </option>
-                        </optgroup>
-                        <optgroup label="Graduate Programs">
-                          <option value="Ph.D">
-                            Doctor of Philosophy (Ph.D)
-                          </option>
-                          <option value="Ed.D">
-                            Doctor of Education (Ed.D)
-                          </option>
-                          <option value="MA.Ed">
-                            Master of Arts in Education (MA.Ed)
-                          </option>
-                          <option value="MA.Ed-LL">
-                            Master of Arts in Education Major in Language and
-                            Literature (MA.Ed-L.L)
-                          </option>
-                          <option value="MPA">
-                            Master in Public Administration (MPA)
-                          </option>
-                          <option value="MBA">
-                            Master in Business Administration (MBA)
-                          </option>
-                        </optgroup>
+                        {loadingCourses ? (
+                          <option disabled>Loading courses...</option>
+                        ) : (
+                          Object.entries(groupCoursesByDepartment(courses)).map(
+                            ([department, departmentCourses]) => (
+                              <optgroup key={department} label={department}>
+                                {departmentCourses.map((course) => (
+                                  <option key={course.id} value={course.code}>
+                                    {course.name}
+                                  </option>
+                                ))}
+                              </optgroup>
+                            ),
+                          )
+                        )}
                       </select>
                     </div>
 
