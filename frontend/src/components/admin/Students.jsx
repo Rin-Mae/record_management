@@ -15,6 +15,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../adminLayout/Sidebar";
 import { useStudents, getGenderDisplay, formatDate } from "./useStudents.jsx";
+import { validateSpecialCharacters } from "../../utils/validation.js";
+import { toast } from "react-toastify";
 
 function Students() {
   const navigate = useNavigate();
@@ -55,8 +57,6 @@ function Students() {
     openEditModal,
     handleInputChange,
     handleSubmit,
-    enrollmentOptions,
-    loadingEnrollmentOptions,
 
     // View Modal
     showViewModal,
@@ -126,7 +126,19 @@ function Students() {
                       className="form-control"
                       placeholder="Search by ID or Name"
                       value={search}
-                      onChange={(e) => setSearch(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        // Validate special characters
+                        const validation = validateSpecialCharacters(value, [
+                          "-",
+                          " ",
+                        ]);
+                        if (!validation.isValid) {
+                          toast.error(validation.message);
+                          return;
+                        }
+                        setSearch(value);
+                      }}
                     />
                   </div>
                 </div>
@@ -139,31 +151,45 @@ function Students() {
                     onChange={(e) => setCourseFilter(e.target.value)}
                   >
                     <option value="">All Courses</option>
-                    <optgroup label="Basic Education">
-                      <option value="Elementary">Elementary</option>
+                    <optgroup label="Basic Education Center">
+                      <option value="Elementary">Elementary School</option>
                       <option value="Junior Highschool">
-                        Junior High School
+                        Junior Highschool
                       </option>
-                      <option value="Senior Highschool">
-                        Senior High School
+                      <option disabled>
+                        —— Senior Highschool - Academic Track ——
+                      </option>
+                      <option value="ABM">
+                        Accountancy and Business Management (ABM)
+                      </option>
+                      <option value="STEM">
+                        Science Technology Engineering and Mathematics (STEM)
+                      </option>
+                      <option value="HUMSS">
+                        Humanities and Social Science (HUMSS)
+                      </option>
+                      <option disabled>
+                        —— Senior Highschool - Technical & Vocational Track ——
+                      </option>
+                      <option value="HE">Home Economics (HE)</option>
+                      <option value="ICT">
+                        Information and Communication Technology (ICT)
                       </option>
                     </optgroup>
-                    <optgroup label="Undergraduate">
-                      <option value="BSIT">BSIT</option>
-                      <option value="BSCS">BSCS</option>
-                      <option value="BSGE">BSGE</option>
-                      <option value="BSA">BSA</option>
-                      <option value="BEEd">BEEd</option>
-                      <option value="BSCrim">BSCrim</option>
-                      <option value="BSN">BSN</option>
-                      <option value="AB PolSci">AB PolSci</option>
-                      <option value="AB English">AB English</option>
-                      <option value="ABCom">ABCom</option>
-                      <option value="BSMA">BSMA</option>
-                      <option value="BSHM">BSHM</option>
-                    </optgroup>
-                    <optgroup label="BSEd - Majors">
-                      <option value="BSEd">BSEd (All)</option>
+                    <optgroup label="College Degree">
+                      <option value="BSGE">
+                        Bachelor of Science in Geodetic Engineering (BSGE)
+                      </option>
+                      <option value="BSA">
+                        Bachelor of Science in Accountancy (BSA)
+                      </option>
+                      <option value="BEEd">
+                        Bachelor of Elementary Education (BEEd)
+                      </option>
+                      <option disabled>
+                        —— Bachelor of Secondary Education (BSEd) ——
+                      </option>
+                      <option value="BSEd">BSEd (All Majors)</option>
                       <option value="BSEd - Math">BSEd - Major in Math</option>
                       <option value="BSEd - English">
                         BSEd - Major in English
@@ -174,26 +200,62 @@ function Students() {
                       <option value="BSEd - Science">
                         BSEd - Major in Science
                       </option>
-                    </optgroup>
-                    <optgroup label="BSBA - Majors">
-                      <option value="BSBA">BSBA (All)</option>
+                      <option value="BSCrim">
+                        Bachelor of Science in Criminology (BSCrim)
+                      </option>
+                      <option value="BSN">
+                        Bachelor of Science in Nursing (BSN)
+                      </option>
+                      <option value="AB PolSci">
+                        Bachelor of Arts in Political Science (AB PolSci)
+                      </option>
+                      <option value="AB English">
+                        Bachelor of Arts in English Language Studies (AB
+                        English)
+                      </option>
+                      <option value="ABCom">
+                        Bachelor of Arts in Communication (ABCom)
+                      </option>
+                      <option disabled>
+                        —— Bachelor of Science in Business Administration (BSBA)
+                        ——
+                      </option>
+                      <option value="BSBA">BSBA (All Majors)</option>
                       <option value="BSBA - FM">
-                        BSBA - Financial Management
+                        BSBA - Major in Financial Management
                       </option>
                       <option value="BSBA - MM">
-                        BSBA - Marketing Management
+                        BSBA - Major in Marketing Management
+                      </option>
+                      <option value="BSBA - MA">
+                        BSBA - Major in Management Accounting
                       </option>
                       <option value="BSBA - HRM">
-                        BSBA - Human Resource Management
+                        BSBA - Major in Human Resource Management
+                      </option>
+                      <option value="BSIT">
+                        Bachelor of Science in Information Technology (BSIT)
+                      </option>
+                      <option value="BSHM">
+                        Bachelor of Science in Hospitality Management (BSHM)
                       </option>
                     </optgroup>
-                    <optgroup label="Graduate Degrees">
-                      <option value="Ph.D">Ph.D</option>
-                      <option value="Ed.D">Ed.D</option>
-                      <option value="MA.Ed">MA.Ed</option>
-                      <option value="MA.Ed - L.L">MA.Ed - L.L</option>
-                      <option value="MPA">MPA</option>
-                      <option value="MBA">MBA</option>
+                    <optgroup label="Graduate Programs">
+                      <option value="Ph.D">Doctor of Philosophy (Ph.D)</option>
+                      <option value="Ed.D">Doctor of Education (Ed.D)</option>
+                      <option value="MA.Ed">
+                        Master of Arts in Education (MA.Ed)
+                      </option>
+                      <option value="MA.Ed-LL">
+                        Master of Arts in Education Major in Language and
+                        Literature (MA.Ed-L.L)
+                      </option>
+                      <option value="MPA">
+                        Master in Public Administration (MPA)
+                      </option>
+                      <option value="MBA">
+                        Master in Business Administration (MBA)
+                      </option>
                     </optgroup>
                   </select>
                 </div>
@@ -517,26 +579,134 @@ function Students() {
                     </div>
 
                     {/* Course */}
-                    <div className="col-md-4">
+                    <div className="col-md-6">
                       <label className="form-label">Course</label>
                       <select
                         className="form-select"
                         name="course"
                         value={formData.course}
                         onChange={handleInputChange}
-                        disabled={loadingCourses}
                       >
                         <option value="">Select Course</option>
-                        {courses.map((course) => (
-                          <option key={course.id} value={course.code}>
-                            {course.code} - {course.name}
+                        <optgroup label="Basic Education Center">
+                          <option value="Elementary">Elementary School</option>
+                          <option value="Junior Highschool">
+                            Junior Highschool
                           </option>
-                        ))}
+                          <option disabled>
+                            —— Senior Highschool - Academic Track ——
+                          </option>
+                          <option value="ABM">
+                            Accountancy and Business Management (ABM)
+                          </option>
+                          <option value="STEM">
+                            Science Technology Engineering and Mathematics
+                            (STEM)
+                          </option>
+                          <option value="HUMSS">
+                            Humanities and Social Science (HUMSS)
+                          </option>
+                          <option disabled>
+                            —— Senior Highschool - Technical & Vocational Track
+                            ——
+                          </option>
+                          <option value="HE">Home Economics (HE)</option>
+                          <option value="ICT">
+                            Information and Communication Technology (ICT)
+                          </option>
+                        </optgroup>
+                        <optgroup label="College Degree">
+                          <option value="BSGE">
+                            Bachelor of Science in Geodetic Engineering (BSGE)
+                          </option>
+                          <option value="BSA">
+                            Bachelor of Science in Accountancy (BSA)
+                          </option>
+                          <option value="BEEd">
+                            Bachelor of Elementary Education (BEEd)
+                          </option>
+                          <option disabled>
+                            —— Bachelor of Secondary Education (BSEd) ——
+                          </option>
+                          <option value="BSEd">BSEd (All Majors)</option>
+                          <option value="BSEd - Math">
+                            BSEd - Major in Math
+                          </option>
+                          <option value="BSEd - English">
+                            BSEd - Major in English
+                          </option>
+                          <option value="BSEd - Filipino">
+                            BSEd - Major in Filipino
+                          </option>
+                          <option value="BSEd - Science">
+                            BSEd - Major in Science
+                          </option>
+                          <option value="BSCrim">
+                            Bachelor of Science in Criminology (BSCrim)
+                          </option>
+                          <option value="BSN">
+                            Bachelor of Science in Nursing (BSN)
+                          </option>
+                          <option value="AB PolSci">
+                            Bachelor of Arts in Political Science (AB PolSci)
+                          </option>
+                          <option value="AB English">
+                            Bachelor of Arts in English Language Studies (AB
+                            English)
+                          </option>
+                          <option value="ABCom">
+                            Bachelor of Arts in Communication (ABCom)
+                          </option>
+                          <option disabled>
+                            —— Bachelor of Science in Business Administration
+                            (BSBA) ——
+                          </option>
+                          <option value="BSBA">BSBA (All Majors)</option>
+                          <option value="BSBA - FM">
+                            BSBA - Major in Financial Management
+                          </option>
+                          <option value="BSBA - MM">
+                            BSBA - Major in Marketing Management
+                          </option>
+                          <option value="BSBA - MA">
+                            BSBA - Major in Management Accounting
+                          </option>
+                          <option value="BSBA - HRM">
+                            BSBA - Major in Human Resource Management
+                          </option>
+                          <option value="BSIT">
+                            Bachelor of Science in Information Technology (BSIT)
+                          </option>
+                          <option value="BSHM">
+                            Bachelor of Science in Hospitality Management (BSHM)
+                          </option>
+                        </optgroup>
+                        <optgroup label="Graduate Programs">
+                          <option value="Ph.D">
+                            Doctor of Philosophy (Ph.D)
+                          </option>
+                          <option value="Ed.D">
+                            Doctor of Education (Ed.D)
+                          </option>
+                          <option value="MA.Ed">
+                            Master of Arts in Education (MA.Ed)
+                          </option>
+                          <option value="MA.Ed-LL">
+                            Master of Arts in Education Major in Language and
+                            Literature (MA.Ed-L.L)
+                          </option>
+                          <option value="MPA">
+                            Master in Public Administration (MPA)
+                          </option>
+                          <option value="MBA">
+                            Master in Business Administration (MBA)
+                          </option>
+                        </optgroup>
                       </select>
                     </div>
 
                     {/* Year Level */}
-                    <div className="col-md-4">
+                    <div className="col-md-6">
                       <label className="form-label">Year Level</label>
                       <select
                         className="form-select"
@@ -551,32 +721,6 @@ function Students() {
                         <option value="4">4th Year</option>
                         <option value="5">5th Year</option>
                       </select>
-                    </div>
-
-                    {/* Auto-enroll period on create */}
-                    <div className="col-md-4">
-                      <label className="form-label">Enrollment Period</label>
-                      <select
-                        className={`form-select ${formErrors.enrollment_list_id ? "is-invalid" : ""}`}
-                        name="enrollment_list_id"
-                        value={formData.enrollment_list_id || ""}
-                        onChange={handleInputChange}
-                        disabled={loadingEnrollmentOptions}
-                      >
-                        <option value="">--</option>
-                        {enrollmentOptions.map((enrollment) => (
-                          <option key={enrollment.id} value={enrollment.id}>
-                            {enrollment.period} - {enrollment.academic_year}
-                          </option>
-                        ))}
-                      </select>
-                      {formErrors.enrollment_list_id && (
-                        <div className="invalid-feedback">
-                          {Array.isArray(formErrors.enrollment_list_id)
-                            ? formErrors.enrollment_list_id[0]
-                            : formErrors.enrollment_list_id}
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -699,17 +843,6 @@ function Students() {
               <div className="modal-body pt-0">
                 {/* Student Header */}
                 <div className="text-center mb-4">
-                  <div
-                    className="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold mx-auto mb-3"
-                    style={{
-                      width: "80px",
-                      height: "80px",
-                      fontSize: "1.5rem",
-                    }}
-                  >
-                    {selectedStudent.firstname?.charAt(0)}
-                    {selectedStudent.lastname?.charAt(0)}
-                  </div>
                   <h4 className="mb-1">
                     {selectedStudent.firstname}{" "}
                     {selectedStudent.middlename

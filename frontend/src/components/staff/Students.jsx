@@ -18,6 +18,8 @@ import {
   getGenderDisplay,
   formatDate,
 } from "./useStaffStudents.jsx";
+import { validateSpecialCharacters } from "../../utils/validation.js";
+import { toast } from "react-toastify";
 
 function StaffStudents() {
   const navigate = useNavigate();
@@ -121,7 +123,19 @@ function StaffStudents() {
                       className="form-control"
                       placeholder="Search student..."
                       value={search}
-                      onChange={(e) => setSearch(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        // Validate special characters
+                        const validation = validateSpecialCharacters(value, [
+                          "-",
+                          " ",
+                        ]);
+                        if (!validation.isValid) {
+                          toast.error(validation.message);
+                          return;
+                        }
+                        setSearch(value);
+                      }}
                     />
                   </div>
                 </div>

@@ -253,20 +253,10 @@ function CollapsibleWithLink({ item, pathname, navigate, level }) {
 
 // UserAvatar component
 function UserAvatar({ user }) {
-  const initials = user
-    ? `${user.firstname?.charAt(0) || ""}${user.lastname?.charAt(0) || ""}`.toUpperCase()
-    : "AD";
-
   return (
     <div className="d-flex align-items-center gap-2">
-      <div
-        className="rounded-circle bg-success d-flex align-items-center justify-content-center text-white fw-bold"
-        style={{ width: "45px", height: "45px" }}
-      >
-        {initials}
-      </div>
-      <div className="d-none d-lg-flex flex-column">
-        <span className="text-white fw-semibold small">
+      <div className="d-flex flex-column">
+        <span className="text-white fw-semibold" style={{ fontSize: "1.1rem" }}>
           {user?.firstname || "Admin"} {user?.lastname || ""}
         </span>
         <span className="text-white-50 small text-capitalize">

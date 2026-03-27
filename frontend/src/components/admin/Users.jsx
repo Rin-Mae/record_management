@@ -2,6 +2,8 @@ import React from "react";
 import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiMail } from "react-icons/fi";
 import Sidebar from "../adminLayout/Sidebar";
 import { useUsers, getRoleBadge } from "./useUsers.jsx";
+import { validateSpecialCharacters } from "../../utils/validation.js";
+import { toast } from "react-toastify";
 
 function Users() {
   const {
@@ -75,7 +77,22 @@ function Users() {
                       className="form-control"
                       placeholder="Search by name, email, or username"
                       value={search}
-                      onChange={(e) => setSearch(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        // Validate special characters
+                        const validation = validateSpecialCharacters(value, [
+                          "-",
+                          "_",
+                          ".",
+                          "@",
+                          " ",
+                        ]);
+                        if (!validation.isValid) {
+                          toast.error(validation.message);
+                          return;
+                        }
+                        setSearch(value);
+                      }}
                     />
                   </div>
                 </div>
@@ -510,17 +527,6 @@ function Users() {
                   </div>
                   <div className="modal-body pt-0">
                     <div className="text-center mb-4">
-                      <div
-                        className="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold mx-auto mb-3"
-                        style={{
-                          width: "80px",
-                          height: "80px",
-                          fontSize: "1.5rem",
-                        }}
-                      >
-                        {selectedUser.firstname?.charAt(0)}
-                        {selectedUser.lastname?.charAt(0)}
-                      </div>
                       <h4 className="mb-1">
                         {selectedUser.firstname}{" "}
                         {selectedUser.middlename

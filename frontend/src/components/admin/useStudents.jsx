@@ -9,6 +9,12 @@ import {
   formatDate,
   initialStudentForm,
 } from "../../utils/index.jsx";
+import {
+  validateName,
+  validateStudentId,
+  validateEmail,
+  validateSpecialCharacters,
+} from "../../utils/validation.js";
 
 // Re-export utilities for component use
 export { getGenderDisplay, formatDate };
@@ -44,9 +50,6 @@ export function useStudents() {
   const [formData, setFormData] = useState(initialStudentForm);
   const [formErrors, setFormErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
-  const [enrollmentOptions, setEnrollmentOptions] = useState([]);
-  const [loadingEnrollmentOptions, setLoadingEnrollmentOptions] =
-    useState(false);
 
   // View modal state
   const [showViewModal, setShowViewModal] = useState(false);
@@ -170,11 +173,28 @@ export function useStudents() {
     setSelectedStudent(null);
   }, []);
 
-  // Handle form input change
+  // Handle form input change with validation
   const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
+    let error = null;
+
+    // Validate based on field type
+    if (name === "student_id") {
+      const validation = validateStudentId(value);
+      if (!validation.isValid) error = validation.message;
+    } else if (name === "firstname" || name === "lastname") {
+      const validation = validateName(value);
+      if (!validation.isValid) error = validation.message;
+    } else if (name === "middlename" && value) {
+      const validation = validateSpecialCharacters(value, ["-", ".", " "]);
+      if (!validation.isValid) error = validation.message;
+    } else if (name === "email" && value) {
+      const validation = validateEmail(value);
+      if (!validation.isValid) error = validation.message;
+    }
+
     setFormData((prev) => ({ ...prev, [name]: value }));
-    setFormErrors((prev) => ({ ...prev, [name]: null }));
+    setFormErrors((prev) => ({ ...prev, [name]: error ? [error] : null }));
   }, []);
 
   // Handle form submit
@@ -190,9 +210,6 @@ export function useStudents() {
           age: formData.age ? parseInt(formData.age) : null,
           year_level: formData.year_level
             ? parseInt(formData.year_level)
-            : null,
-          enrollment_list_id: formData.enrollment_list_id
-            ? parseInt(formData.enrollment_list_id)
             : null,
         };
 
@@ -292,8 +309,6 @@ export function useStudents() {
     openEditModal,
     handleInputChange,
     handleSubmit,
-    enrollmentOptions,
-    loadingEnrollmentOptions,
 
     // View Modal
     showViewModal,

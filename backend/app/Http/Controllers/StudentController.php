@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Student;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class StudentController extends Controller
@@ -72,7 +71,6 @@ class StudentController extends Controller
             'course' => 'nullable|string|max:255',
             'year_level' => 'nullable|integer|min:1|max:10',
             'status' => 'nullable|in:active,inactive,graduated,dropped',
-            'enrollment_list_id' => 'nullable|integer|exists:enrollment_lists,id',
         ]);
 
         if ($validator->fails()) {
@@ -84,22 +82,11 @@ class StudentController extends Controller
         }
 
         $validated = $validator->validated();
-        $enrollmentListId = $validated['enrollment_list_id'] ?? null;
 
         // Keep non-student table fields out of mass assignment payload.
-        unset($validated['enrollment_list_id'], $validated['status']);
+        unset($validated['status']);
 
-        $student = DB::transaction(function () use ($validated, $enrollmentListId) {
-            $student = Student::create($validated);
-
-            if ($enrollmentListId) {
-                $student->enrollmentLists()->syncWithoutDetaching([$enrollmentListId]);
-            }
-
-            return $student;
-        });
-
-        $student->load('enrollmentLists:id,period,academic_year');
+        $student = Student::create($validated);
 
         return response()->json([
             'success' => true,

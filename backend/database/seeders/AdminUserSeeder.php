@@ -22,7 +22,7 @@ class AdminUserSeeder extends Seeder
         $user->lastname = 'Gante';
         $user->username = 'maegante';
         $user->email = 'mae@example.com';
-        $user->password = bcrypt('mae123');
+        $user->password = bcrypt('mae12345');
         $user->role = 'admin';
         // // Fill other required fields with sensible defaults for tests.
         // $user->middlename = null;

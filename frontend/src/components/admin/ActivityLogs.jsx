@@ -2,9 +2,10 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../../contexts/AuthContext";
-import { FiMenu, FiSearch, FiFilter } from "react-icons/fi";
+import { FiMenu, FiSearch, FiFilter, FiEye } from "react-icons/fi";
 import Sidebar from "../adminLayout/Sidebar";
 import { formatDate } from "../../utils/index.jsx";
+import { validateSpecialCharacters } from "../../utils/validation.js";
 
 export default function ActivityLogs() {
   const navigate = useNavigate();
@@ -27,6 +28,10 @@ export default function ActivityLogs() {
   const [selectedAction, setSelectedAction] = useState("");
   const [models, setModels] = useState([]);
   const [actions, setActions] = useState([]);
+
+  // Details modal
+  const [selectedLog, setSelectedLog] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -119,6 +124,18 @@ export default function ActivityLogs() {
     }
   };
 
+  const handleResetFilters = () => {
+    setSearchTerm("");
+    setSelectedModel("");
+    setSelectedAction("");
+    setPagination((p) => ({ ...p, currentPage: 1 }));
+  };
+
+  const openDetailsModal = (log) => {
+    setSelectedLog(log);
+    setShowDetailsModal(true);
+  };
+
   return (
     <>
       <Sidebar
@@ -156,7 +173,7 @@ export default function ActivityLogs() {
           <div className="card border-0 shadow-sm mb-4">
             <div className="card-body">
               <div className="row g-3">
-                <div className="col-12 col-md-5">
+                <div className="col-12 col-md-4">
                   <div className="input-group">
                     <span className="input-group-text bg-white">
                       <FiSearch size={16} />
@@ -167,7 +184,18 @@ export default function ActivityLogs() {
                       placeholder="Search by model ID or model type..."
                       value={searchTerm}
                       onChange={(e) => {
-                        setSearchTerm(e.target.value);
+                        const value = e.target.value;
+                        // Validate special characters
+                        const validation = validateSpecialCharacters(value, [
+                          "-",
+                          "_",
+                          ".",
+                        ]);
+                        if (!validation.isValid) {
+                          toast.error(validation.message);
+                          return;
+                        }
+                        setSearchTerm(value);
                         setPagination((p) => ({ ...p, currentPage: 1 }));
                       }}
                     />
@@ -238,15 +266,36 @@ export default function ActivityLogs() {
                   <table className="table table-hover align-middle mb-0">
                     <thead className="table-light">
                       <tr>
+                        <th>User</th>
                         <th>Model</th>
                         <th>ID</th>
                         <th>Action</th>
                         <th>Date</th>
+                        <th style={{ width: "60px" }}>View</th>
                       </tr>
                     </thead>
                     <tbody>
                       {logs.map((log) => (
                         <tr key={log.id}>
+                          <td>
+                            {log.user ? (
+                              <div>
+                                <div className="fw-semibold">
+                                  {log.user.firstname} {log.user.lastname}
+                                  {log.user.deleted_at && (
+                                    <span className="text-muted small ms-2">
+                                      (Deleted)
+                                    </span>
+                                  )}
+                                </div>
+                                <small className="text-muted">
+                                  {log.user.email}
+                                </small>
+                              </div>
+                            ) : (
+                              <span className="text-muted">-</span>
+                            )}
+                          </td>
                           <td>
                             <span className="badge bg-primary">
                               {log.model}
@@ -274,6 +323,15 @@ export default function ActivityLogs() {
                             <small className="text-muted">
                               {formatDate(log.created_at)}
                             </small>
+                          </td>
+                          <td>
+                            <button
+                              className="btn btn-sm btn-outline-info"
+                              onClick={() => openDetailsModal(log)}
+                              title="View changes"
+                            >
+                              <FiEye size={14} />
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -351,6 +409,208 @@ export default function ActivityLogs() {
           </div>
         </div>
       </div>
+
+      {/* Details Modal */}
+      {showDetailsModal && selectedLog && (
+        <div
+          className="modal fade show d-block"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <div className="modal-dialog modal-lg modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">
+                  Changes - {selectedLog.model}
+                  {selectedLog.user && (
+                    <span className="ms-2 text-muted small">
+                      by {selectedLog.user.firstname}{" "}
+                      {selectedLog.user.lastname}
+                    </span>
+                  )}
+                </h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowDetailsModal(false)}
+                />
+              </div>
+              <div className="modal-body">
+                <div className="row mb-3">
+                  <div className="col-12">
+                    <div className="row g-2">
+                      <div className="col-6">
+                        <label className="form-label fw-semibold text-muted small">
+                          User
+                        </label>
+                        <p className="mb-0">
+                          {selectedLog.user ? (
+                            <div>
+                              <div className="fw-semibold">
+                                {selectedLog.user.firstname}{" "}
+                                {selectedLog.user.lastname}
+                                {selectedLog.user.deleted_at && (
+                                  <span className="text-muted small ms-2">
+                                    (Deleted)
+                                  </span>
+                                )}
+                              </div>
+                              <small className="text-muted">
+                                {selectedLog.user.email}
+                              </small>
+                            </div>
+                          ) : (
+                            <span className="text-muted">-</span>
+                          )}
+                        </p>
+                      </div>
+                      <div className="col-6">
+                        <label className="form-label fw-semibold text-muted small">
+                          Model
+                        </label>
+                        <p className="mb-0">
+                          <span className="badge bg-primary">
+                            {selectedLog.model}
+                          </span>
+                        </p>
+                      </div>
+                      <div className="col-6">
+                        <label className="form-label fw-semibold text-muted small">
+                          ID
+                        </label>
+                        <p className="mb-0">
+                          <code>{selectedLog.model_id}</code>
+                        </p>
+                      </div>
+                      <div className="col-6">
+                        <label className="form-label fw-semibold text-muted small">
+                          Action
+                        </label>
+                        <p className="mb-0">
+                          <span
+                            className={`badge ${
+                              selectedLog.action === "created"
+                                ? "bg-success"
+                                : selectedLog.action === "updated"
+                                  ? "bg-info"
+                                  : selectedLog.action === "deleted"
+                                    ? "bg-danger"
+                                    : "bg-secondary"
+                            }`}
+                          >
+                            {selectedLog.action}
+                          </span>
+                        </p>
+                      </div>
+                      <div className="col-6">
+                        <label className="form-label fw-semibold text-muted small">
+                          Date
+                        </label>
+                        <p className="mb-0">
+                          <small>{formatDate(selectedLog.created_at)}</small>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Old Values */}
+                {selectedLog.old_values &&
+                  Object.keys(selectedLog.old_values).length > 0 && (
+                    <div className="mb-3">
+                      <h6 className="fw-semibold text-danger mb-2">
+                        Old Values
+                      </h6>
+                      <div
+                        className="p-3 rounded"
+                        style={{ backgroundColor: "#f8d7da" }}
+                      >
+                        <div className="table-responsive">
+                          <table className="table table-sm table-borderless mb-0">
+                            <tbody>
+                              {Object.entries(selectedLog.old_values).map(
+                                ([key, value]) => (
+                                  <tr key={key}>
+                                    <td
+                                      className="fw-semibold text-muted"
+                                      style={{ width: "40%" }}
+                                    >
+                                      {key}
+                                    </td>
+                                    <td>
+                                      <code className="text-danger">
+                                        {typeof value === "object"
+                                          ? JSON.stringify(value, null, 2)
+                                          : String(value)}
+                                      </code>
+                                    </td>
+                                  </tr>
+                                ),
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                {/* New Values */}
+                {selectedLog.new_values &&
+                  Object.keys(selectedLog.new_values).length > 0 && (
+                    <div className="mb-3">
+                      <h6 className="fw-semibold text-success mb-2">
+                        New Values
+                      </h6>
+                      <div
+                        className="p-3 rounded"
+                        style={{ backgroundColor: "#d4edda" }}
+                      >
+                        <div className="table-responsive">
+                          <table className="table table-sm table-borderless mb-0">
+                            <tbody>
+                              {Object.entries(selectedLog.new_values).map(
+                                ([key, value]) => (
+                                  <tr key={key}>
+                                    <td
+                                      className="fw-semibold text-muted"
+                                      style={{ width: "40%" }}
+                                    >
+                                      {key}
+                                    </td>
+                                    <td>
+                                      <code className="text-success">
+                                        {typeof value === "object"
+                                          ? JSON.stringify(value, null, 2)
+                                          : String(value)}
+                                      </code>
+                                    </td>
+                                  </tr>
+                                ),
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                {!selectedLog.old_values && !selectedLog.new_values && (
+                  <div className="alert alert-info mb-0">
+                    No changes recorded for this action
+                  </div>
+                )}
+              </div>
+              <div className="modal-footer">
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setShowDetailsModal(false)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

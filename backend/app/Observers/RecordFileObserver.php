@@ -5,8 +5,18 @@ namespace App\Observers;
 use App\Models\RecordFile;
 use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Auth;
+
 class RecordFileObserver
 {
+    /**
+     * Get the current authenticated user's full name
+     */
+    private function getUserName()
+    {
+        $user = Auth::user();
+        return $user ? "{$user->firstname} {$user->lastname}" : null;
+    }
+
     /**
      * Handle the RecordFile "created" event.
      */
@@ -14,6 +24,7 @@ class RecordFileObserver
     {
         ActivityLog::create([
             'user_id' => Auth::id(),
+            'user_name' => $this->getUserName(),
             'model' => 'RecordFile',
             'model_id' => $recordFile->id,
             'action' => 'created',
@@ -28,6 +39,7 @@ class RecordFileObserver
     {
          ActivityLog::create([
             'user_id' => Auth::id(),
+            'user_name' => $this->getUserName(),
             'model' => 'RecordFile',
             'model_id' => $recordFile->id,
             'action' => 'updated',
@@ -43,6 +55,7 @@ class RecordFileObserver
     {
         ActivityLog::create([
             'user_id' => Auth::id(),
+            'user_name' => $this->getUserName(),
             'model' => 'RecordFile',
             'model_id' => $recordFile->id,
             'action' => 'deleted',

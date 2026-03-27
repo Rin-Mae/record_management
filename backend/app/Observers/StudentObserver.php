@@ -5,8 +5,18 @@ namespace App\Observers;
 use App\Models\Student;
 use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Auth;
+
 class StudentObserver
 {
+    /**
+     * Get the current authenticated user's full name
+     */
+    private function getUserName()
+    {
+        $user = Auth::user();
+        return $user ? "{$user->firstname} {$user->lastname}" : null;
+    }
+
     /**
      * Handle the Student "created" event.
      */
@@ -14,6 +24,7 @@ class StudentObserver
     {
         ActivityLog::create([
             'user_id' => Auth::id(),
+            'user_name' => $this->getUserName(),
             'model' => 'Student',
             'model_id' => $student->id,
             'action' => 'created',
@@ -29,6 +40,7 @@ class StudentObserver
     {
         ActivityLog::create([
             'user_id' => Auth::id(),
+            'user_name' => $this->getUserName(),
             'model' => 'Student',
             'model_id' => $student->id,
             'action' => 'updated',
@@ -44,6 +56,7 @@ class StudentObserver
     {
         ActivityLog::create([
             'user_id' => Auth::id(),
+            'user_name' => $this->getUserName(),
             'model' => 'Student',
             'model_id' => $student->id,
             'action' => 'deleted',

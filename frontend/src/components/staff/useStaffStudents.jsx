@@ -9,6 +9,12 @@ import {
   formatDate,
   initialStudentForm,
 } from "../../utils/index.jsx";
+import {
+  validateName,
+  validateStudentId,
+  validateEmail,
+  validateSpecialCharacters,
+} from "../../utils/validation.js";
 
 // Re-export utilities for component use
 export { getGenderDisplay, formatDate };
@@ -100,14 +106,37 @@ export function useStaffStudents() {
     handleSearch();
   }, [handleSearch]);
 
-  // Handle input change for form
+  // Handle input change for form with validation
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    let error = null;
+
+    // Validate based on field type
+    if (name === "student_id") {
+      const validation = validateStudentId(value);
+      if (!validation.isValid) error = validation.message;
+    } else if (name === "firstname" || name === "lastname") {
+      const validation = validateName(value);
+      if (!validation.isValid) error = validation.message;
+    } else if (name === "middlename" && value) {
+      const validation = validateSpecialCharacters(value, ["-", ".", " "]);
+      if (!validation.isValid) error = validation.message;
+    } else if (name === "email" && value) {
+      const validation = validateEmail(value);
+      if (!validation.isValid) error = validation.message;
+    }
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
-    if (formErrors[name]) {
+
+    if (error) {
+      setFormErrors((prev) => ({
+        ...prev,
+        [name]: [error],
+      }));
+    } else if (formErrors[name]) {
       setFormErrors((prev) => ({
         ...prev,
         [name]: "",

@@ -4,6 +4,10 @@ import { useAuth } from "../../contexts/AuthContext";
 import CourseServices from "../../services/CourseServices.jsx";
 import { FiMenu, FiPlus, FiEdit2, FiTrash2, FiSearch } from "react-icons/fi";
 import Sidebar from "../adminLayout/Sidebar";
+import {
+  validateCourseName,
+  validateSpecialCharacters,
+} from "../../utils/validation.js";
 
 export default function Courses() {
   const { user, logout } = useAuth();
@@ -99,15 +103,38 @@ export default function Courses() {
     fetchCourses();
   }, [fetchCourses]);
 
-  // Handle input change
+  // Handle input change with validation
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    let error = "";
+
+    // Validate based on field type
+    if (name === "code" && value) {
+      const validation = validateSpecialCharacters(value, ["-"]);
+      if (!validation.isValid) error = validation.message;
+    } else if (name === "name" && value) {
+      const validation = validateCourseName(value);
+      if (!validation.isValid) error = validation.message;
+    } else if (name === "department" && value) {
+      const validation = validateSpecialCharacters(value, ["-", "&", "(", " "]);
+      if (!validation.isValid) error = validation.message;
+    } else if (name === "description" && value) {
+      const validation = validateSpecialCharacters(value, ["-", ".", ",", " "]);
+      if (!validation.isValid) error = validation.message;
+    }
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
-    // Clear error for this field
-    if (formErrors[name]) {
+
+    // Set or clear error for this field
+    if (error) {
+      setFormErrors((prev) => ({
+        ...prev,
+        [name]: error,
+      }));
+    } else if (formErrors[name]) {
       setFormErrors((prev) => ({
         ...prev,
         [name]: "",
@@ -249,7 +276,17 @@ export default function Courses() {
                         placeholder="Search course..."
                         value={search}
                         onChange={(e) => {
-                          setSearch(e.target.value);
+                          const value = e.target.value;
+                          // Validate special characters
+                          const validation = validateSpecialCharacters(value, [
+                            "-",
+                            " ",
+                          ]);
+                          if (!validation.isValid) {
+                            toast.error(validation.message);
+                            return;
+                          }
+                          setSearch(value);
                           setPagination((p) => ({ ...p, currentPage: 1 }));
                         }}
                       />
@@ -446,7 +483,9 @@ export default function Courses() {
                     />
                     {formErrors.code && (
                       <div className="invalid-feedback d-block">
-                        {formErrors.code[0]}
+                        {typeof formErrors.code === "string"
+                          ? formErrors.code
+                          : formErrors.code[0]}
                       </div>
                     )}
                   </div>
@@ -466,7 +505,9 @@ export default function Courses() {
                     />
                     {formErrors.name && (
                       <div className="invalid-feedback d-block">
-                        {formErrors.name[0]}
+                        {typeof formErrors.name === "string"
+                          ? formErrors.name
+                          : formErrors.name[0]}
                       </div>
                     )}
                   </div>
@@ -475,12 +516,17 @@ export default function Courses() {
                     <label className="form-label fw-semibold">Department</label>
                     <input
                       type="text"
-                      className="form-control"
+                      className={`form-control ${formErrors.department ? "is-invalid" : ""}`}
                       name="department"
                       value={formData.department}
                       onChange={handleInputChange}
                       placeholder="e.g., College, Basic Education Center"
                     />
+                    {formErrors.department && (
+                      <div className="invalid-feedback d-block">
+                        {formErrors.department}
+                      </div>
+                    )}
                   </div>
 
                   <div className="mb-3">
@@ -488,13 +534,18 @@ export default function Courses() {
                       Description
                     </label>
                     <textarea
-                      className="form-control"
+                      className={`form-control ${formErrors.description ? "is-invalid" : ""}`}
                       name="description"
                       value={formData.description}
                       onChange={handleInputChange}
                       placeholder="Course description"
                       rows={3}
                     />
+                    {formErrors.description && (
+                      <div className="invalid-feedback d-block">
+                        {formErrors.description}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="modal-footer">

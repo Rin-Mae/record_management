@@ -3,6 +3,7 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import { useAuth } from "../contexts/AuthContext";
 import NCLogo from "../assets/NC Logo.png";
+import { validateEmail, validatePassword } from "../utils/validation.js";
 
 function Login() {
   const { login } = useAuth();
@@ -10,9 +11,34 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.isValid) {
+      newErrors.email = emailValidation.message;
+    }
+
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      newErrors.password = passwordValidation.message;
+    }
+
+    return newErrors;
+  };
 
   const onSubmit = async (ev) => {
     ev.preventDefault();
+
+    const newErrors = validateForm();
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      toast.error("Please fix the errors in the form");
+      return;
+    }
+
     setLoading(true);
     try {
       const user = await login({ email, password });
@@ -53,23 +79,39 @@ function Login() {
           <div className="mb-3">
             <input
               type="email"
-              className="form-control"
+              className={`form-control ${errors.email ? "is-invalid" : ""}`}
               placeholder="Email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setErrors({ ...errors, email: "" });
+              }}
               required
             />
+            {errors.email && (
+              <div className="invalid-feedback" style={{ display: "block" }}>
+                {errors.email}
+              </div>
+            )}
           </div>
 
           <div className="mb-3">
             <input
               type="password"
-              className="form-control"
+              className={`form-control ${errors.password ? "is-invalid" : ""}`}
               placeholder="Password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setErrors({ ...errors, password: "" });
+              }}
               required
             />
+            {errors.password && (
+              <div className="invalid-feedback" style={{ display: "block" }}>
+                {errors.password}
+              </div>
+            )}
           </div>
 
           <button className="btn btn-success w-100" disabled={loading}>

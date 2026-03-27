@@ -22,6 +22,7 @@ import {
 } from "react-icons/fi";
 import Sidebar from "../adminLayout/Sidebar";
 import { formatDate } from "../../utils/index.jsx";
+import { validateSpecialCharacters } from "../../utils/validation.js";
 
 // Record type config mapping URL slug to labels
 const RECORD_TYPE_CONFIG = {
@@ -565,7 +566,19 @@ export default function RecordManagement() {
                       className="form-control border-start-0"
                       placeholder="Search by student name or ID..."
                       value={studentSearch}
-                      onChange={(e) => setStudentSearch(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        // Validate special characters
+                        const validation = validateSpecialCharacters(value, [
+                          "-",
+                          " ",
+                        ]);
+                        if (!validation.isValid) {
+                          toast.error(validation.message);
+                          return;
+                        }
+                        setStudentSearch(value);
+                      }}
                     />
                   </div>
                 </div>
@@ -854,9 +867,19 @@ export default function RecordManagement() {
                           className={`form-control ${formErrors.student_id ? "is-invalid" : ""}`}
                           placeholder="Search student by name or ID..."
                           value={modalStudentSearch}
-                          onChange={(e) =>
-                            setModalStudentSearch(e.target.value)
-                          }
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            // Validate special characters
+                            const validation = validateSpecialCharacters(
+                              value,
+                              ["-", " "],
+                            );
+                            if (!validation.isValid) {
+                              toast.error(validation.message);
+                              return;
+                            }
+                            setModalStudentSearch(value);
+                          }}
                           autoComplete="off"
                         />
                         {formErrors.student_id && (

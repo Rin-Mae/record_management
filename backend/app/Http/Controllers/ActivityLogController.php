@@ -17,7 +17,7 @@ class ActivityLogController extends Controller
         $model = $request->get('model', '');
         $action = $request->get('action', '');
 
-        $query = ActivityLog::query();
+        $query = ActivityLog::with(['user' => fn($q) => $q->withTrashed()]);
 
         // Search by model_id or model type
         if ($search) {
