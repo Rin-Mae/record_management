@@ -37,15 +37,25 @@ class RecordFileObserver
      */
     public function updated(RecordFile $recordFile): void
     {
-         ActivityLog::create([
-            'user_id' => Auth::id(),
-            'user_name' => $this->getUserName(),
-            'model' => 'RecordFile',
-            'model_id' => $recordFile->id,
-            'action' => 'updated',
-            'old_values' => $recordFile->getOriginal(),
-            'new_values' => $recordFile->getChanges(),
-        ]);
+        $changes = $recordFile->getChanges();
+        
+        if (!empty($changes)) {
+            // Build old values by extracting only the changed attributes from original
+            $oldValues = [];
+            foreach (array_keys($changes) as $key) {
+                $oldValues[$key] = $recordFile->getOriginal($key);
+            }
+            
+            ActivityLog::create([
+                'user_id' => Auth::id(),
+                'user_name' => $this->getUserName(),
+                'model' => 'RecordFile',
+                'model_id' => $recordFile->id,
+                'action' => 'updated',
+                'old_values' => $oldValues,
+                'new_values' => $changes,
+            ]);
+        }
     }
 
     /**

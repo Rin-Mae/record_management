@@ -79,4 +79,43 @@ class StudentRecord extends Model
     {
         return in_array($type, self::SIMPLIFIED_TYPES);
     }
+
+    /**
+     * Scope for searching records by various fields including related student.
+     */
+    public function scopeSearch($query, $searchTerm)
+    {
+        if (!$searchTerm) {
+            return $query;
+        }
+
+        // Normalize search term
+        $searchTerm = trim($searchTerm);
+        $searchPattern = "%{$searchTerm}%";
+
+        return $query->where(function ($q) use ($searchPattern) {
+            $q->where('title', 'like', $searchPattern)
+              ->orWhere('description', 'like', $searchPattern)
+              ->orWhere('file_name', 'like', $searchPattern)
+              ->orWhereHas('student', function ($sq) use ($searchPattern) {
+                  $sq->where('firstname', 'like', $searchPattern)
+                    ->orWhere('lastname', 'like', $searchPattern)
+                    ->orWhere('student_id', 'like', $searchPattern);
+              });
+        });
+    }
+
+    /**
+     * Scope for filtering by student's course.
+     */
+    public function scopeByCourse($query, $courseCode)
+    {
+        if (!$courseCode) {
+            return $query;
+        }
+
+        return $query->whereHas('student', function ($q) use ($courseCode) {
+            $q->where('course', $courseCode);
+        });
+    }
 }

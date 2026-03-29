@@ -38,15 +38,25 @@ class StudentObserver
      */
     public function updated(Student $student)
     {
-        ActivityLog::create([
-            'user_id' => Auth::id(),
-            'user_name' => $this->getUserName(),
-            'model' => 'Student',
-            'model_id' => $student->id,
-            'action' => 'updated',
-            'old_values' => $student->getOriginal(),
-            'new_values' => $student->getChanges(),
-        ]);
+        $changes = $student->getChanges();
+        
+        if (!empty($changes)) {
+            // Build old values by extracting only the changed attributes from original
+            $oldValues = [];
+            foreach (array_keys($changes) as $key) {
+                $oldValues[$key] = $student->getOriginal($key);
+            }
+            
+            ActivityLog::create([
+                'user_id' => Auth::id(),
+                'user_name' => $this->getUserName(),
+                'model' => 'Student',
+                'model_id' => $student->id,
+                'action' => 'updated',
+                'old_values' => $oldValues,
+                'new_values' => $changes,
+            ]);
+        }
     }
 
     /**

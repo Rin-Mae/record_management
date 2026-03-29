@@ -3,49 +3,33 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\LoginRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Carbon;
 
 class AuthenticateController extends Controller
 {
 
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'firstname' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z ]+$/'],
-            'middlename' => ['nullable', 'string', 'max:255', 'regex:/^[a-zA-Z ]+$/'],
-            'lastname' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z ]+$/'],
-            'birthdate' => ['required', 'date'],
-            'address' => ['required', 'string', 'max:255'],
-            'contact_number' => ['required', 'regex:/^0[0-9]{10}$/'],
-            'gender' => ['required', 'in:male,female'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:6', 'confirmed'],
-        ]);
+        $validated = $request->validated();
 
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => $validator->errors(),
-                'status' => false,
-            ], 422);
-        }
-
-        $age = Carbon::parse($request->birthdate)->age;
+        $age = Carbon::parse($validated['birthdate'])->age;
 
         $user = User::create([
-            'firstname' => $request->firstname,
-            'middlename' => $request->middlename,
-            'lastname' => $request->lastname,
+            'firstname' => $validated['firstname'],
+            'middlename' => $validated['middlename'],
+            'lastname' => $validated['lastname'],
             'age' => $age,
-            'birthdate' => $request->birthdate,
-            'address' => $request->address,
-            'contact_number' => $request->contact_number,
-            'gender' => $request->gender,
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
+            'birthdate' => $validated['birthdate'],
+            'address' => $validated['address'],
+            'contact_number' => $validated['contact_number'],
+            'gender' => $validated['gender'],
+            'email' => $validated['email'],
+            'password' => bcrypt($validated['password']),
         ]);
 
         // Log the user in (start session) so SPA can access protected endpoints
@@ -64,12 +48,9 @@ class AuthenticateController extends Controller
         ]);
     }
 
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $validated = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
+        $validated = $request->validated();
 
         $key = (string) ($validated['email'] ?? '') . $request->ip();
         $maxAttempts = 5;

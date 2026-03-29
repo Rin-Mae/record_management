@@ -37,15 +37,25 @@ class StudentRecordObserver
      */
     public function updated(StudentRecord $record)
     {
-        ActivityLog::create([
-            'user_id' => Auth::id(),
-            'user_name' => $this->getUserName(),
-            'model' => 'StudentRecord',
-            'model_id' => $record->id,
-            'action' => 'updated',
-            'old_values' => $record->getOriginal(),
-            'new_values' => $record->getChanges(),
-        ]);
+        $changes = $record->getChanges();
+        
+        if (!empty($changes)) {
+            // Build old values by extracting only the changed attributes from original
+            $oldValues = [];
+            foreach (array_keys($changes) as $key) {
+                $oldValues[$key] = $record->getOriginal($key);
+            }
+            
+            ActivityLog::create([
+                'user_id' => Auth::id(),
+                'user_name' => $this->getUserName(),
+                'model' => 'StudentRecord',
+                'model_id' => $record->id,
+                'action' => 'updated',
+                'old_values' => $oldValues,
+                'new_values' => $changes,
+            ]);
+        }
     }
 
     /**

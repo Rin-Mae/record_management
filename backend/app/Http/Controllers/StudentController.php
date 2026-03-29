@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Student;
+use App\Http\Requests\StoreStudentRequest;
+use App\Http\Requests\UpdateStudentRequest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class StudentController extends Controller
 {
@@ -15,35 +16,40 @@ class StudentController extends Controller
     {
         $query = Student::select('id', 'student_id', 'firstname', 'middlename', 'lastname', 'email', 'birthdate', 'age', 'gender', 'address', 'contact_number', 'course', 'year_level', 'created_at');
 
-        // Search functionality
+        // Apply search if provided
         if ($request->has('search') && $request->search) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('student_id', 'like', "%{$search}%")
-                  ->orWhere('firstname', 'like', "%{$search}%")
-                  ->orWhere('lastname', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('course', 'like', "%{$search}%");
-            });
+            $query->search($request->search);
         }
 
-        // Filter by course (exact match for course code)
+        // Apply course filter
         if ($request->has('course') && $request->course) {
-            $query->where('course', $request->course);
+            $query->byCourse($request->course);
         }
 
-        // Filter by year level
+        // Apply year level filter
         if ($request->has('year_level') && $request->year_level) {
-            $query->where('year_level', $request->year_level);
+            $query->byYearLevel($request->year_level);
         }
 
         // Sorting
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
+        
+        // Validate sort_by to prevent SQL injection
+        $allowedSortColumns = ['id', 'student_id', 'firstname', 'lastname', 'email', 'course', 'year_level', 'created_at'];
+        if (!in_array($sortBy, $allowedSortColumns)) {
+            $sortBy = 'created_at';
+        }
+        
+        // Validate sort_order
+        if (!in_array(strtoupper($sortOrder), ['ASC', 'DESC'])) {
+            $sortOrder = 'desc';
+        }
+        
         $query->orderBy($sortBy, $sortOrder);
 
         // Pagination
-        $perPage = $request->get('per_page', 10);
+        $perPage = max(1, min($request->get('per_page', 10), 100)); // Limit per_page between 1 and 100
         $students = $query->paginate($perPage);
 
         return response()->json([
@@ -55,36 +61,9 @@ class StudentController extends Controller
     /**
      * Store a newly created student.
      */
-    public function store(Request $request)
+    public function store(StoreStudentRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'student_id' => 'required|string|unique:students,student_id',
-            'firstname' => 'required|string|max:255',
-            'middlename' => 'nullable|string|max:255',
-            'lastname' => 'required|string|max:255',
-            'email' => 'required|email|unique:students,email',
-            'age' => 'nullable|integer|min:1|max:150',
-            'birthdate' => 'nullable|date',
-            'address' => 'nullable|string',
-            'contact_number' => 'nullable|string|max:20',
-            'gender' => 'nullable|in:male,female,other',
-            'course' => 'nullable|string|max:255',
-            'year_level' => 'nullable|integer|min:1|max:10',
-            'status' => 'nullable|in:active,inactive,graduated,dropped',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $validated = $validator->validated();
-
-        // Keep non-student table fields out of mass assignment payload.
-        unset($validated['status']);
+        $validated = $request->validated();
 
         $student = Student::create($validated);
 
@@ -109,32 +88,11 @@ class StudentController extends Controller
     /**
      * Update the specified student.
      */
-    public function update(Request $request, Student $student)
+    public function update(UpdateStudentRequest $request, Student $student)
     {
-        $validator = Validator::make($request->all(), [
-            'student_id' => 'sometimes|required|string|unique:students,student_id,' . $student->id,
-            'firstname' => 'sometimes|required|string|max:255',
-            'middlename' => 'nullable|string|max:255',
-            'lastname' => 'sometimes|required|string|max:255',
-            'email' => 'sometimes|required|email|unique:students,email,' . $student->id,
-            'age' => 'nullable|integer|min:1|max:150',
-            'birthdate' => 'nullable|date',
-            'address' => 'nullable|string',
-            'contact_number' => 'nullable|string|max:20',
-            'gender' => 'nullable|in:male,female,other',
-            'course' => 'nullable|string|max:255',
-            'year_level' => 'nullable|integer|min:1|max:10',
-        ]);
+        $validated = $request->validated();
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $student->update($request->all());
+        $student->update($validated);
 
         return response()->json([
             'success' => true,

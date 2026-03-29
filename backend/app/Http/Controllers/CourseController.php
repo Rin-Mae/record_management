@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Course;
+use App\Http\Requests\StoreCourseRequest;
+use App\Http\Requests\UpdateCourseRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Validator;
 
 class CourseController extends Controller
 {
@@ -16,29 +17,35 @@ class CourseController extends Controller
     {
         $query = Course::select('id', 'code', 'name', 'department', 'description', 'created_at');
 
-        // Search functionality
+        // Apply search if provided
         if ($request->has('search') && $request->search) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('code', 'like', "%{$search}%")
-                  ->orWhere('name', 'like', "%{$search}%")
-                  ->orWhere('department', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
-            });
+            $query->search($request->search);
         }
 
-        // Filter by department
+        // Apply department filter
         if ($request->has('department') && $request->department) {
-            $query->where('department', $request->department);
+            $query->byDepartment($request->department);
         }
 
         // Sorting
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
+        
+        // Validate sort_by to prevent SQL injection
+        $allowedSortColumns = ['id', 'code', 'name', 'department', 'created_at'];
+        if (!in_array($sortBy, $allowedSortColumns)) {
+            $sortBy = 'created_at';
+        }
+        
+        // Validate sort_order
+        if (!in_array(strtoupper($sortOrder), ['ASC', 'DESC'])) {
+            $sortOrder = 'desc';
+        }
+        
         $query->orderBy($sortBy, $sortOrder);
 
         // Pagination
-        $perPage = $request->get('per_page', 10);
+        $perPage = max(1, min($request->get('per_page', 10), 100)); // Limit per_page between 1 and 100
         $courses = $query->paginate($perPage);
 
         return response()->json([
@@ -65,24 +72,11 @@ class CourseController extends Controller
     /**
      * Store a newly created course.
      */
-    public function store(Request $request)
+    public function store(StoreCourseRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'code' => ['required', 'string', 'max:50', 'unique:courses'],
-            'name' => ['required', 'string', 'max:255'],
-            'department' => ['nullable', 'string', 'max:255'],
-            'description' => ['nullable', 'string', 'max:1000'],
-        ]);
+        $validated = $request->validated();
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $course = Course::create($validator->validated());
+        $course = Course::create($validated);
         
         // Invalidate courses cache
         Cache::forget('courses_all');
@@ -108,24 +102,11 @@ class CourseController extends Controller
     /**
      * Update the specified course.
      */
-    public function update(Request $request, Course $course)
+    public function update(UpdateCourseRequest $request, Course $course)
     {
-        $validator = Validator::make($request->all(), [
-            'code' => ['required', 'string', 'max:50', 'unique:courses,code,' . $course->id],
-            'name' => ['required', 'string', 'max:255'],
-            'department' => ['nullable', 'string', 'max:255'],
-            'description' => ['nullable', 'string', 'max:1000'],
-        ]);
+        $validated = $request->validated();
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $course->update($validator->validated());
+        $course->update($validated);
         
         // Invalidate courses cache
         Cache::forget('courses_all');

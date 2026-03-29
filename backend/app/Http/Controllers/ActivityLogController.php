@@ -12,31 +12,30 @@ class ActivityLogController extends Controller
      */
     public function index(Request $request)
     {
-        $perPage = $request->get('per_page', 20);
+        $perPage = max(10, min($request->get('per_page', 10), 100)); // Minimum 10 per page, default 10, max 100
         $search = $request->get('search', '');
         $model = $request->get('model', '');
         $action = $request->get('action', '');
 
-        $query = ActivityLog::with(['user:id,firstname,lastname,email' => fn($q) => $q->withTrashed()])
-            ->select('id', 'user_id', 'user_name', 'model', 'model_id', 'action', 'created_at');
+        $query = ActivityLog::with(['user' => fn($q) => $q->select('id', 'firstname', 'lastname', 'email')->withTrashed()])
+            ->select('id', 'user_id', 'user_name', 'model', 'model_id', 'action', 'old_values', 'new_values', 'created_at');
 
-        // Search by model_id or model type
+        // Apply search if provided
         if ($search) {
-            $query->where('model', 'like', "%{$search}%")
-                  ->orWhere('model_id', 'like', "%{$search}%")
-                  ->orWhere('action', 'like', "%{$search}%");
+            $query->search($search);
         }
 
-        // Filter by model
+        // Apply model filter
         if ($model) {
-            $query->where('model', $model);
+            $query->byModel($model);
         }
 
-        // Filter by action
+        // Apply action filter
         if ($action) {
-            $query->where('action', $action);
+            $query->byAction($action);
         }
 
+        // Order by created_at descending
         $logs = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
         return response()->json([

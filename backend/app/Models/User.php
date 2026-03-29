@@ -49,4 +49,25 @@ class User extends Authenticatable
         'password' => 'hashed',
         'deleted_at' => 'datetime',
     ];
+
+    /**
+     * Scope for searching users by various fields.
+     */
+    public function scopeSearch($query, $searchTerm)
+    {
+        if (!$searchTerm) {
+            return $query;
+        }
+
+        // Normalize search term
+        $searchTerm = trim($searchTerm);
+        $searchPattern = "%{$searchTerm}%";
+
+        return $query->where(function ($q) use ($searchPattern) {
+            $q->where('firstname', 'like', $searchPattern)
+              ->orWhere('lastname', 'like', $searchPattern)
+              ->orWhere('email', 'like', $searchPattern)
+              ->orWhere('username', 'like', $searchPattern);
+        });
+    }
 }

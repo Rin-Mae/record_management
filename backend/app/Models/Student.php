@@ -48,4 +48,51 @@ class Student extends Model
     {
         return $this->hasMany(StudentRecord::class);
     }
+
+    /**
+     * Scope for searching students by various fields.
+     */
+    public function scopeSearch($query, $searchTerm)
+    {
+        if (!$searchTerm) {
+            return $query;
+        }
+
+        // Normalize search term
+        $searchTerm = trim($searchTerm);
+        $searchPattern = "%{$searchTerm}%";
+
+        return $query->where(function ($q) use ($searchPattern) {
+            $q->where('student_id', 'like', $searchPattern)
+              ->orWhere('firstname', 'like', $searchPattern)
+              ->orWhere('lastname', 'like', $searchPattern)
+              ->orWhere('middlename', 'like', $searchPattern)
+              ->orWhere('email', 'like', $searchPattern)
+              ->orWhere('course', 'like', $searchPattern);
+        });
+    }
+
+    /**
+     * Scope for filtering by course.
+     */
+    public function scopeByCourse($query, $courseCode)
+    {
+        if (!$courseCode) {
+            return $query;
+        }
+
+        return $query->where('course', $courseCode);
+    }
+
+    /**
+     * Scope for filtering by year level.
+     */
+    public function scopeByYearLevel($query, $yearLevel)
+    {
+        if (!$yearLevel) {
+            return $query;
+        }
+
+        return $query->where('year_level', $yearLevel);
+    }
 }

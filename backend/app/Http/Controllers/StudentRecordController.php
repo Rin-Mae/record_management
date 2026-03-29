@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\StudentRecord;
+use App\Http\Requests\StoreStudentRecordRequest;
+use App\Http\Requests\UpdateStudentRecordRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
 
 class StudentRecordController extends Controller
 {
@@ -26,35 +27,35 @@ class StudentRecordController extends Controller
         $query = StudentRecord::with(['student:id,student_id,firstname,lastname,course', 'files:id,student_record_id,file_path,file_name'])
             ->where('record_type', $type);
 
-        // Search functionality
+        // Apply search if provided
         if ($request->has('search') && $request->search) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhere('file_name', 'like', "%{$search}%")
-                  ->orWhereHas('student', function ($sq) use ($search) {
-                      $sq->where('firstname', 'like', "%{$search}%")
-                        ->orWhere('lastname', 'like', "%{$search}%")
-                        ->orWhere('student_id', 'like', "%{$search}%");
-                  });
-            });
+            $query->search($request->search);
         }
 
-        // Filter by course
+        // Apply course filter
         if ($request->has('course') && $request->course) {
-            $query->whereHas('student', function ($q) use ($request) {
-                $q->where('course', $request->course);
-            });
+            $query->byCourse($request->course);
         }
 
         // Sorting
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
+        
+        // Validate sort_by to prevent SQL injection
+        $allowedSortColumns = ['id', 'title', 'student_id', 'created_at'];
+        if (!in_array($sortBy, $allowedSortColumns)) {
+            $sortBy = 'created_at';
+        }
+        
+        // Validate sort_order
+        if (!in_array(strtoupper($sortOrder), ['ASC', 'DESC'])) {
+            $sortOrder = 'desc';
+        }
+        
         $query->orderBy($sortBy, $sortOrder);
 
         // Pagination
-        $perPage = $request->get('per_page', 10);
+        $perPage = max(1, min($request->get('per_page', 10), 100)); // Limit per_page between 1 and 100
         $records = $query->paginate($perPage);
 
         return response()->json([
@@ -68,7 +69,7 @@ class StudentRecordController extends Controller
     /**
      * Store a record by type.
      */
-    public function storeByType(Request $request, $type)
+    public function storeByType(StoreStudentRecordRequest $request, $type)
     {
         // Validate type
         if (!array_key_exists($type, StudentRecord::RECORD_TYPES)) {
@@ -78,26 +79,11 @@ class StudentRecordController extends Controller
             ], 422);
         }
 
-        // Build validation rules: student + 1-5 files
-        $rules = [
-            'student_id' => 'required|exists:students,id',
-            'files' => 'required|array|min:1|max:5',
-            'files.*' => 'file|max:10240',
-        ];
-
-        $validator = Validator::make($request->all(), $rules);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
+        $validated = $request->validated();
 
         // Auto-generate title from type label
         $data = [
-            'student_id' => $request->student_id,
+            'student_id' => $validated['student_id'],
             'record_type' => $type,
             'title' => StudentRecord::RECORD_TYPES[$type],
         ];
@@ -107,7 +93,7 @@ class StudentRecordController extends Controller
         // Store multiple files
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
-                $path = $file->store("student_records/{$request->student_id}", 'public');
+                $path = $file->store("student_records/{$validated['student_id']}", 'public');
                 $record->files()->create([
                     'file_path' => $path,
                     'file_name' => $file->getClientOriginalName(),
@@ -129,7 +115,7 @@ class StudentRecordController extends Controller
     /**
      * Update a record by type.
      */
-    public function updateByType(Request $request, $type, StudentRecord $record)
+    public function updateByType(UpdateStudentRecordRequest $request, $type, StudentRecord $record)
     {
         if ($record->record_type !== $type) {
             return response()->json([
@@ -138,33 +124,17 @@ class StudentRecordController extends Controller
             ], 404);
         }
 
-        $rules = [
-            'student_id' => 'sometimes|required|exists:students,id',
-            'files' => 'nullable|array|max:5',
-            'files.*' => 'file|max:10240',
-            'remove_file_ids' => 'nullable|array',
-            'remove_file_ids.*' => 'integer|exists:record_files,id',
-        ];
-
-        $validator = Validator::make($request->all(), $rules);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
+        $validated = $request->validated();
 
         // Update student if provided
         if ($request->has('student_id')) {
-            $record->student_id = $request->student_id;
+            $record->student_id = $validated['student_id'];
             $record->save();
         }
 
         // Remove files if requested
         if ($request->has('remove_file_ids')) {
-            $filesToRemove = $record->files()->whereIn('id', $request->remove_file_ids)->get();
+            $filesToRemove = $record->files()->whereIn('id', $validated['remove_file_ids'])->get();
             foreach ($filesToRemove as $fileRecord) {
                 Storage::disk('public')->delete($fileRecord->file_path);
                 $fileRecord->delete();
