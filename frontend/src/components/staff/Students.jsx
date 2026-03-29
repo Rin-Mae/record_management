@@ -1,17 +1,4 @@
-import {
-  FiMenu,
-  FiPlus,
-  FiEye,
-  FiSearch,
-  FiMail,
-  FiPhone,
-  FiMapPin,
-  FiCalendar,
-  FiUser,
-  FiBook,
-  FiX,
-} from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
+import { FiMenu, FiPlus, FiEye, FiSearch } from "react-icons/fi";
 import StaffSidebar from "../staffLayout/Sidebar";
 import {
   useStaffStudents,
@@ -22,7 +9,6 @@ import { validateSpecialCharacters } from "../../utils/validation.js";
 import { toast } from "react-toastify";
 
 function StaffStudents() {
-  const navigate = useNavigate();
   const {
     // Auth & Layout
     user,
@@ -47,7 +33,6 @@ function StaffStudents() {
     setCourseFilter,
     yearLevelFilter,
     setYearLevelFilter,
-    handleSearch,
 
     // Create Modal
     showModal,
@@ -637,15 +622,6 @@ function StaffStudents() {
                     {selectedStudent.contact_number || "-"}
                   </p>
                 </div>
-              </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={closeViewModal}
-                >
-                  Close
-                </button>
               </div>
             </div>
           </div>

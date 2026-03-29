@@ -97,9 +97,14 @@ export function useUsers() {
     [search, pagination.perPage],
   );
 
+  // Debounced search effect
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+    const debounceTimer = setTimeout(() => {
+      fetchUsers(1);
+    }, 500); // 500ms debounce delay
+
+    return () => clearTimeout(debounceTimer);
+  }, [search, fetchUsers]);
 
   // Handle search
   const handleSearch = useCallback(

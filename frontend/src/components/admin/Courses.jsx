@@ -98,10 +98,14 @@ export default function Courses() {
     [search, departmentFilter, sortBy, sortOrder, pagination.perPage],
   );
 
-  // Load initial data
+  // Load initial data and debounce search/filters
   useEffect(() => {
-    fetchCourses();
-  }, [fetchCourses]);
+    const debounceTimer = setTimeout(() => {
+      fetchCourses(1);
+    }, 500); // 500ms debounce delay
+
+    return () => clearTimeout(debounceTimer);
+  }, [search, departmentFilter, sortBy, sortOrder, fetchCourses]);
 
   // Handle input change with validation
   const handleInputChange = (e) => {

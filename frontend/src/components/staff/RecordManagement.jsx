@@ -245,7 +245,11 @@ export default function RecordManagement() {
   );
 
   useEffect(() => {
-    fetchRecords(1);
+    const debounceTimer = setTimeout(() => {
+      fetchRecords(1);
+    }, 500); // 500ms debounce delay
+
+    return () => clearTimeout(debounceTimer);
   }, [
     isUnifiedView,
     recordType,

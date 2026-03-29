@@ -55,7 +55,7 @@ export function useStaffStudents() {
   const [selectedStudent, setSelectedStudent] = useState(null);
 
   // Fetch students
-  const handleSearch = useCallback(
+  const fetchStudents = useCallback(
     (page = 1) => {
       setLoading(true);
       StudentServices.getStudents({
@@ -86,6 +86,15 @@ export function useStaffStudents() {
     [search, courseFilter, yearLevelFilter, pagination.perPage],
   );
 
+  // Debounced search effect
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      fetchStudents(1);
+    }, 500); // 500ms debounce delay
+
+    return () => clearTimeout(debounceTimer);
+  }, [search, courseFilter, yearLevelFilter, fetchStudents]);
+
   // Fetch courses
   useEffect(() => {
     setLoadingCourses(true);
@@ -100,11 +109,6 @@ export function useStaffStudents() {
       })
       .finally(() => setLoadingCourses(false));
   }, []);
-
-  // Initial fetch
-  useEffect(() => {
-    handleSearch();
-  }, [handleSearch]);
 
   // Handle input change for form with validation
   const handleInputChange = (e) => {
@@ -161,7 +165,7 @@ export function useStaffStudents() {
       await StudentServices.createStudent(formData);
       toast.success("Student added successfully");
       setShowModal(false);
-      handleSearch();
+      fetchStudents(1);
     } catch (error) {
       const errors = error.response?.data?.errors || {};
       if (Object.keys(errors).length > 0) {
@@ -203,7 +207,7 @@ export function useStaffStudents() {
 
   // Go to page
   const goToPage = (page) => {
-    handleSearch(page);
+    fetchStudents(page);
   };
 
   return {
@@ -230,7 +234,7 @@ export function useStaffStudents() {
     setCourseFilter,
     yearLevelFilter,
     setYearLevelFilter,
-    handleSearch,
+    fetchStudents,
 
     // Create Modal
     showModal,

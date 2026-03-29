@@ -19,7 +19,7 @@ export default function ActivityLogs() {
     currentPage: 1,
     lastPage: 1,
     total: 0,
-    perPage: 20,
+    perPage: 10,
   });
 
   // Filters
@@ -134,6 +134,13 @@ export default function ActivityLogs() {
   const openDetailsModal = (log) => {
     setSelectedLog(log);
     setShowDetailsModal(true);
+  };
+
+  // Helper function to check if values object is empty
+  const hasValues = (values) => {
+    return (
+      values && typeof values === "object" && Object.keys(values).length > 0
+    );
   };
 
   return (
@@ -342,68 +349,72 @@ export default function ActivityLogs() {
             </div>
 
             {/* Pagination */}
-            {pagination.lastPage > 1 && (
-              <div className="card-footer bg-white d-flex justify-content-between align-items-center">
-                <small className="text-muted">
-                  Showing{" "}
-                  {(pagination.currentPage - 1) * pagination.perPage + 1}-
-                  {Math.min(
-                    pagination.currentPage * pagination.perPage,
-                    pagination.total,
-                  )}{" "}
-                  of {pagination.total}
-                </small>
-                <nav>
-                  <ul className="pagination pagination-sm mb-0">
-                    <li
-                      className={`page-item ${pagination.currentPage === 1 ? "disabled" : ""}`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() =>
-                          handlePageChange(pagination.currentPage - 1)
-                        }
-                      >
-                        Previous
-                      </button>
-                    </li>
-                    {Array.from(
-                      { length: pagination.lastPage },
-                      (_, i) => i + 1,
-                    )
-                      .filter(
-                        (page) =>
-                          page === 1 ||
-                          page === pagination.lastPage ||
-                          Math.abs(page - pagination.currentPage) <= 1,
-                      )
-                      .map((page, idx, arr) => (
-                        <li key={page}>
-                          {idx > 0 && arr[idx - 1] !== page - 1 && (
-                            <span className="page-link disabled">...</span>
-                          )}
+            {logs.length > 0 && (
+              <div className="card-footer bg-white">
+                <div className="d-flex justify-content-between align-items-center">
+                  <small className="text-muted">
+                    Showing{" "}
+                    {(pagination.currentPage - 1) * pagination.perPage + 1}-
+                    {Math.min(
+                      pagination.currentPage * pagination.perPage,
+                      pagination.total,
+                    )}{" "}
+                    of {pagination.total}
+                  </small>
+                  {pagination.lastPage > 1 && (
+                    <nav>
+                      <ul className="pagination pagination-sm mb-0">
+                        <li
+                          className={`page-item ${pagination.currentPage === 1 ? "disabled" : ""}`}
+                        >
                           <button
-                            className={`page-link ${page === pagination.currentPage ? "active" : ""}`}
-                            onClick={() => handlePageChange(page)}
+                            className="page-link"
+                            onClick={() =>
+                              handlePageChange(pagination.currentPage - 1)
+                            }
                           >
-                            {page}
+                            Previous
                           </button>
                         </li>
-                      ))}
-                    <li
-                      className={`page-item ${pagination.currentPage === pagination.lastPage ? "disabled" : ""}`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() =>
-                          handlePageChange(pagination.currentPage + 1)
-                        }
-                      >
-                        Next
-                      </button>
-                    </li>
-                  </ul>
-                </nav>
+                        {Array.from(
+                          { length: pagination.lastPage },
+                          (_, i) => i + 1,
+                        )
+                          .filter(
+                            (page) =>
+                              page === 1 ||
+                              page === pagination.lastPage ||
+                              Math.abs(page - pagination.currentPage) <= 1,
+                          )
+                          .map((page, idx, arr) => (
+                            <li key={page}>
+                              {idx > 0 && arr[idx - 1] !== page - 1 && (
+                                <span className="page-link disabled">...</span>
+                              )}
+                              <button
+                                className={`page-link ${page === pagination.currentPage ? "active" : ""}`}
+                                onClick={() => handlePageChange(page)}
+                              >
+                                {page}
+                              </button>
+                            </li>
+                          ))}
+                        <li
+                          className={`page-item ${pagination.currentPage === pagination.lastPage ? "disabled" : ""}`}
+                        >
+                          <button
+                            className="page-link"
+                            onClick={() =>
+                              handlePageChange(pagination.currentPage + 1)
+                            }
+                          >
+                            Next
+                          </button>
+                        </li>
+                      </ul>
+                    </nav>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -442,7 +453,7 @@ export default function ActivityLogs() {
                         <label className="form-label fw-semibold text-muted small">
                           User
                         </label>
-                        <p className="mb-0">
+                        <div className="mb-0">
                           {selectedLog.user ? (
                             <div>
                               <div className="fw-semibold">
@@ -461,31 +472,31 @@ export default function ActivityLogs() {
                           ) : (
                             <span className="text-muted">-</span>
                           )}
-                        </p>
+                        </div>
                       </div>
                       <div className="col-6">
                         <label className="form-label fw-semibold text-muted small">
                           Model
                         </label>
-                        <p className="mb-0">
+                        <div className="mb-0">
                           <span className="badge bg-primary">
                             {selectedLog.model}
                           </span>
-                        </p>
+                        </div>
                       </div>
                       <div className="col-6">
                         <label className="form-label fw-semibold text-muted small">
                           ID
                         </label>
-                        <p className="mb-0">
+                        <div className="mb-0">
                           <code>{selectedLog.model_id}</code>
-                        </p>
+                        </div>
                       </div>
                       <div className="col-6">
                         <label className="form-label fw-semibold text-muted small">
                           Action
                         </label>
-                        <p className="mb-0">
+                        <div className="mb-0">
                           <span
                             className={`badge ${
                               selectedLog.action === "created"
@@ -499,113 +510,102 @@ export default function ActivityLogs() {
                           >
                             {selectedLog.action}
                           </span>
-                        </p>
+                        </div>
                       </div>
                       <div className="col-6">
                         <label className="form-label fw-semibold text-muted small">
                           Date
                         </label>
-                        <p className="mb-0">
+                        <div className="mb-0">
                           <small>{formatDate(selectedLog.created_at)}</small>
-                        </p>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Old Values */}
-                {selectedLog.old_values &&
-                  Object.keys(selectedLog.old_values).length > 0 && (
-                    <div className="mb-3">
-                      <h6 className="fw-semibold text-danger mb-2">
-                        Old Values
-                      </h6>
-                      <div
-                        className="p-3 rounded"
-                        style={{ backgroundColor: "#f8d7da" }}
-                      >
-                        <div className="table-responsive">
-                          <table className="table table-sm table-borderless mb-0">
-                            <tbody>
-                              {Object.entries(selectedLog.old_values).map(
-                                ([key, value]) => (
-                                  <tr key={key}>
-                                    <td
-                                      className="fw-semibold text-muted"
-                                      style={{ width: "40%" }}
-                                    >
-                                      {key}
-                                    </td>
-                                    <td>
-                                      <code className="text-danger">
-                                        {typeof value === "object"
-                                          ? JSON.stringify(value, null, 2)
-                                          : String(value)}
-                                      </code>
-                                    </td>
-                                  </tr>
-                                ),
-                              )}
-                            </tbody>
-                          </table>
-                        </div>
+                {hasValues(selectedLog.old_values) && (
+                  <div className="mb-3">
+                    <h6 className="fw-semibold text-danger mb-2">Old Values</h6>
+                    <div
+                      className="p-3 rounded"
+                      style={{ backgroundColor: "#f8d7da" }}
+                    >
+                      <div className="table-responsive">
+                        <table className="table table-sm table-borderless mb-0">
+                          <tbody>
+                            {Object.entries(selectedLog.old_values).map(
+                              ([key, value]) => (
+                                <tr key={key}>
+                                  <td
+                                    className="fw-semibold text-muted"
+                                    style={{ width: "40%" }}
+                                  >
+                                    {key}
+                                  </td>
+                                  <td>
+                                    <code className="text-danger">
+                                      {typeof value === "object"
+                                        ? JSON.stringify(value, null, 2)
+                                        : String(value)}
+                                    </code>
+                                  </td>
+                                </tr>
+                              ),
+                            )}
+                          </tbody>
+                        </table>
                       </div>
                     </div>
-                  )}
-
-                {/* New Values */}
-                {selectedLog.new_values &&
-                  Object.keys(selectedLog.new_values).length > 0 && (
-                    <div className="mb-3">
-                      <h6 className="fw-semibold text-success mb-2">
-                        New Values
-                      </h6>
-                      <div
-                        className="p-3 rounded"
-                        style={{ backgroundColor: "#d4edda" }}
-                      >
-                        <div className="table-responsive">
-                          <table className="table table-sm table-borderless mb-0">
-                            <tbody>
-                              {Object.entries(selectedLog.new_values).map(
-                                ([key, value]) => (
-                                  <tr key={key}>
-                                    <td
-                                      className="fw-semibold text-muted"
-                                      style={{ width: "40%" }}
-                                    >
-                                      {key}
-                                    </td>
-                                    <td>
-                                      <code className="text-success">
-                                        {typeof value === "object"
-                                          ? JSON.stringify(value, null, 2)
-                                          : String(value)}
-                                      </code>
-                                    </td>
-                                  </tr>
-                                ),
-                              )}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                {!selectedLog.old_values && !selectedLog.new_values && (
-                  <div className="alert alert-info mb-0">
-                    No changes recorded for this action
                   </div>
                 )}
-              </div>
-              <div className="modal-footer">
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => setShowDetailsModal(false)}
-                >
-                  Close
-                </button>
+
+                {/* New Values */}
+                {hasValues(selectedLog.new_values) && (
+                  <div className="mb-3">
+                    <h6 className="fw-semibold text-success mb-2">
+                      New Values
+                    </h6>
+                    <div
+                      className="p-3 rounded"
+                      style={{ backgroundColor: "#d4edda" }}
+                    >
+                      <div className="table-responsive">
+                        <table className="table table-sm table-borderless mb-0">
+                          <tbody>
+                            {Object.entries(selectedLog.new_values).map(
+                              ([key, value]) => (
+                                <tr key={key}>
+                                  <td
+                                    className="fw-semibold text-muted"
+                                    style={{ width: "40%" }}
+                                  >
+                                    {key}
+                                  </td>
+                                  <td>
+                                    <code className="text-success">
+                                      {typeof value === "object"
+                                        ? JSON.stringify(value, null, 2)
+                                        : String(value)}
+                                    </code>
+                                  </td>
+                                </tr>
+                              ),
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {!hasValues(selectedLog.old_values) &&
+                  !hasValues(selectedLog.new_values) && (
+                    <div className="alert alert-info mb-0">
+                      No changes recorded for this action
+                    </div>
+                  )}
               </div>
             </div>
           </div>

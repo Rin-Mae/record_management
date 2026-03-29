@@ -10,9 +10,7 @@ import {
   FiCalendar,
   FiUser,
   FiBook,
-  FiFileText,
 } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
 import Sidebar from "../adminLayout/Sidebar";
 import { useStudents, getGenderDisplay, formatDate } from "./useStudents.jsx";
 import { validateSpecialCharacters } from "../../utils/validation.js";
@@ -32,7 +30,6 @@ const groupCoursesByDepartment = (courses) => {
 };
 
 function Students() {
-  const navigate = useNavigate();
   const {
     // Auth & Layout
     user,

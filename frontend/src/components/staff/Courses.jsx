@@ -75,10 +75,14 @@ export default function StaffCourses() {
     [search, departmentFilter, pagination.perPage],
   );
 
-  // Load initial data
+  // Load initial data and debounce search/filters
   useEffect(() => {
-    fetchCourses();
-  }, [fetchCourses]);
+    const debounceTimer = setTimeout(() => {
+      fetchCourses(1);
+    }, 500); // 500ms debounce delay
+
+    return () => clearTimeout(debounceTimer);
+  }, [search, departmentFilter, fetchCourses]);
 
   return (
     <>

@@ -252,7 +252,11 @@ export default function RecordManagement() {
   );
 
   useEffect(() => {
-    fetchRecords(1);
+    const debounceTimer = setTimeout(() => {
+      fetchRecords(1);
+    }, 500); // 500ms debounce delay
+
+    return () => clearTimeout(debounceTimer);
   }, [
     isUnifiedView,
     recordType,
@@ -1300,14 +1304,6 @@ export default function RecordManagement() {
                     </div>
                   )}
                 </div>
-              </div>
-              <div className="modal-footer">
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => setShowViewModal(false)}
-                >
-                  Close
-                </button>
               </div>
             </div>
           </div>

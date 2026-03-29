@@ -134,9 +134,14 @@ export function useStudents() {
     [search, courseFilter, yearLevelFilter, pagination.perPage],
   );
 
+  // Debounced search effect
   useEffect(() => {
-    fetchStudents();
-  }, [fetchStudents]);
+    const debounceTimer = setTimeout(() => {
+      fetchStudents(1);
+    }, 500); // 500ms debounce delay
+
+    return () => clearTimeout(debounceTimer);
+  }, [search, courseFilter, yearLevelFilter, fetchStudents]);
 
   // Fetch all courses for dropdown
   const fetchCourses = useCallback(async () => {
