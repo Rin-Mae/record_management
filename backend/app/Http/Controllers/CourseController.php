@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 
 class CourseController extends Controller
@@ -13,7 +14,7 @@ class CourseController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Course::query();
+        $query = Course::select('id', 'code', 'name', 'department', 'description', 'created_at');
 
         // Search functionality
         if ($request->has('search') && $request->search) {
@@ -51,7 +52,9 @@ class CourseController extends Controller
      */
     public function all()
     {
-        $courses = Course::orderBy('code')->get();
+        $courses = Cache::remember('courses_all', 3600, function () {
+            return Course::select('id', 'code', 'name')->orderBy('code')->get();
+        });
 
         return response()->json([
             'success' => true,
@@ -80,6 +83,9 @@ class CourseController extends Controller
         }
 
         $course = Course::create($validator->validated());
+        
+        // Invalidate courses cache
+        Cache::forget('courses_all');
 
         return response()->json([
             'success' => true,
@@ -120,6 +126,9 @@ class CourseController extends Controller
         }
 
         $course->update($validator->validated());
+        
+        // Invalidate courses cache
+        Cache::forget('courses_all');
 
         return response()->json([
             'success' => true,
@@ -134,6 +143,9 @@ class CourseController extends Controller
     public function destroy(Course $course)
     {
         $course->delete();
+        
+        // Invalidate courses cache
+        Cache::forget('courses_all');
 
         return response()->json([
             'success' => true,
@@ -149,10 +161,11 @@ class CourseController extends Controller
         $totalCourses = Course::count();
         $departmentCount = Course::distinct('department')->count('department');
 
-        // Count students per course
+        // Count students per course in a single query
         $courseStudentStats = Course::withCount('students')
             ->orderBy('students_count', 'desc')
             ->limit(5)
+            ->select('code', 'name')
             ->get()
             ->map(function ($course) {
                 return [

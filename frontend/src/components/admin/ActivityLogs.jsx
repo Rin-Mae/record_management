@@ -171,7 +171,7 @@ export default function ActivityLogs() {
 
           {/* Filters */}
           <div className="card border-0 shadow-sm mb-4">
-            <div className="card-body">
+            <div className="card-body bg-success bg-opacity-10">
               <div className="row g-3">
                 <div className="col-12 col-md-4">
                   <div className="input-group">
@@ -264,7 +264,7 @@ export default function ActivityLogs() {
               ) : (
                 <div className="table-responsive">
                   <table className="table table-hover align-middle mb-0">
-                    <thead className="table-light">
+                    <thead className="table-success">
                       <tr>
                         <th>User</th>
                         <th>Model</th>
@@ -297,7 +297,7 @@ export default function ActivityLogs() {
                             )}
                           </td>
                           <td>
-                            <span className="badge bg-primary">
+                            <span className="badge bg-success">
                               {log.model}
                             </span>
                           </td>
@@ -310,7 +310,7 @@ export default function ActivityLogs() {
                                 log.action === "created"
                                   ? "bg-success"
                                   : log.action === "updated"
-                                    ? "bg-info"
+                                    ? "bg-warning"
                                     : log.action === "deleted"
                                       ? "bg-danger"
                                       : "bg-secondary"
@@ -326,7 +326,7 @@ export default function ActivityLogs() {
                           </td>
                           <td>
                             <button
-                              className="btn btn-sm btn-outline-info"
+                              className="btn btn-sm btn-outline-primary"
                               onClick={() => openDetailsModal(log)}
                               title="View changes"
                             >

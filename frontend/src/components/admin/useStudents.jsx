@@ -16,6 +16,34 @@ import {
   validateSpecialCharacters,
 } from "../../utils/validation.js";
 
+// Date formatting utilities
+const formatDateToDisplay = (date) => {
+  if (!date) return "";
+
+  try {
+    // Handle ISO 8601 format (YYYY-MM-DDTHH:MM:SS.sssZ or YYYY-MM-DD)
+    let dateStr = date.split("T")[0]; // Remove time portion if present
+
+    if (dateStr.includes("-")) {
+      const [year, month, day] = dateStr.split("-");
+      return `${month}/${day}/${year}`;
+    }
+    return date;
+  } catch (e) {
+    return date;
+  }
+};
+
+const formatDateForBackend = (date) => {
+  if (!date) return "";
+  // Convert mm/dd/yyyy to YYYY-MM-DD
+  if (date.includes("/")) {
+    const [month, day, year] = date.split("/");
+    return `${year}-${month}-${day}`;
+  }
+  return date;
+};
+
 // Re-export utilities for component use
 export { getGenderDisplay, formatDate };
 
@@ -152,8 +180,18 @@ export function useStudents() {
     setFormData({
       ...initialStudentForm,
       ...student,
-      birthdate: student.birthdate ? student.birthdate.split("T")[0] : "",
+      id: student.id,
+      student_id: student.student_id || "",
+      firstname: student.firstname || "",
+      middlename: student.middlename || "",
+      lastname: student.lastname || "",
+      email: student.email || "",
+      birthdate: formatDateToDisplay(student.birthdate || ""),
       age: student.age || "",
+      gender: student.gender || "",
+      address: student.address || "",
+      contact_number: student.contact_number || "",
+      course: student.course || "",
       year_level: student.year_level || "",
     });
     setFormErrors({});
@@ -207,6 +245,7 @@ export function useStudents() {
       try {
         const dataToSend = {
           ...formData,
+          birthdate: formatDateForBackend(formData.birthdate),
           age: formData.age ? parseInt(formData.age) : null,
           year_level: formData.year_level
             ? parseInt(formData.year_level)

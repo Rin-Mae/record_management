@@ -112,12 +112,12 @@ function Students() {
         </div>
 
         {/* Main Content */}
-        <div className="container-fluid p-4">
+        <div className="container-fluid p-4 ">
           {/* Header */}
           <div className="d-flex flex-wrap justify-content-between align-items-center mb-4">
             <h1 className="h3 mb-2 mb-md-0">Students Management</h1>
             <button
-              className="btn btn-success d-flex align-items-center gap-2"
+              className="btn btn-info text-light d-flex align-items-center gap-2"
               onClick={openCreateModal}
             >
               <FiPlus size={18} />
@@ -127,7 +127,7 @@ function Students() {
 
           {/* Search and Filter */}
           <div className="card mb-4">
-            <div className="card-body">
+            <div className="card-body bg-info bg-opacity-10">
               <form onSubmit={handleSearch} className="row g-3">
                 <div className="col-md-6">
                   <div className="input-group">
@@ -202,8 +202,8 @@ function Students() {
           </div>
 
           {/* Students Table */}
-          <div className="card">
-            <div className="card-body">
+          <div className="card ">
+            <div className="card-body bg-info bg-opacity-10">
               {loading ? (
                 <div className="text-center py-5">
                   <div className="spinner-border text-success" role="status">
@@ -324,7 +324,7 @@ function Students() {
         <div
           className="modal show d-block"
           tabIndex="-1"
-          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+          style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
         >
           <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div className="modal-content">
@@ -333,7 +333,7 @@ function Students() {
                   {modalMode === "create" ? "Add New Student" : "Edit Student"}
                 </h5>
                 <button
-                  type="button"
+                  type="button "
                   className="btn-close"
                   onClick={() => setShowModal(false)}
                   disabled={submitting}
@@ -453,13 +453,16 @@ function Students() {
                     {/* Birthdate */}
                     <div className="col-md-4">
                       <label className="form-label">Birthdate</label>
-                      <input
-                        type="date"
-                        className="form-control"
-                        name="birthdate"
-                        value={formData.birthdate}
-                        onChange={handleInputChange}
-                      />
+                      <div className="input-group">
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="birthdate"
+                          placeholder="mm/dd/yyyy"
+                          value={formData.birthdate}
+                          onChange={handleInputChange}
+                        />
+                      </div>
                     </div>
 
                     {/* Age */}

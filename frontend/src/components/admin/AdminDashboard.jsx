@@ -93,7 +93,7 @@ function AdminDashboard() {
           <div className="row g-4">
             <div className="col-md-3 col-sm-6">
               <div className="card border-0 shadow-sm h-100">
-                <div className="card-body">
+                <div className="card-body bg-info bg-opacity-10">
                   <div className="d-flex align-items-center">
                     <div className="flex-shrink-0">
                       <div
@@ -119,7 +119,7 @@ function AdminDashboard() {
             </div>
             <div className="col-md-3 col-sm-6">
               <div className="card border-0 shadow-sm h-100">
-                <div className="card-body">
+                <div className="card-body bg-success bg-opacity-10">
                   <div className="d-flex align-items-center">
                     <div className="flex-shrink-0">
                       <div
@@ -145,7 +145,7 @@ function AdminDashboard() {
             </div>
             <div className="col-md-3 col-sm-6">
               <div className="card border-0 shadow-sm h-100">
-                <div className="card-body">
+                <div className="card-body bg-info bg-opacity-10">
                   <div className="d-flex align-items-center">
                     <div className="flex-shrink-0">
                       <div
@@ -171,7 +171,7 @@ function AdminDashboard() {
             </div>
             <div className="col-md-3 col-sm-6">
               <div className="card border-0 shadow-sm h-100">
-                <div className="card-body">
+                <div className="card-body bg-warning bg-opacity-10">
                   <div className="d-flex align-items-center">
                     <div className="flex-shrink-0">
                       <div
@@ -201,8 +201,8 @@ function AdminDashboard() {
           <div className="row mt-4 g-4">
             {/* Basic Education Chart */}
             <div className="col-12">
-              <div className="card border-0 shadow-sm">
-                <div className="card-header bg-white border-0 py-3">
+              <div className="card border-0 bg-success bg-opacity-10 shadow-sm">
+                <div className="card-header bg-success bg-opacity-10 border-0 py-3">
                   <h5 className="mb-0 text-success">
                     <FiBook className="me-2" />
                     Basic Education Center
@@ -291,9 +291,9 @@ function AdminDashboard() {
 
             {/* College Chart */}
             <div className="col-12">
-              <div className="card border-0 shadow-sm">
-                <div className="card-header bg-white border-0 py-3">
-                  <h5 className="mb-0 text-info">
+              <div className="card border-0 bg-info bg-opacity-10 shadow-sm">
+                <div className="card-header bg-info bg-opacity-10 border-0 py-3">
+                  <h5 className="mb-0 text-primary">
                     <FiBookOpen className="me-2" />
                     College
                   </h5>
@@ -381,8 +381,8 @@ function AdminDashboard() {
 
             {/* Graduate Chart */}
             <div className="col-12">
-              <div className="card border-0 shadow-sm">
-                <div className="card-header bg-white border-0 py-3">
+              <div className="card border-0 bg-warning bg-opacity-10 shadow-sm">
+                <div className="card-header bg-warning bg-opacity-10 border-0 py-3">
                   <h5 className="mb-0 text-warning">
                     <FiAward className="me-2" />
                     Graduate

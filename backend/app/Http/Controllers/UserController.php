@@ -14,7 +14,7 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::query();
+        $query = User::select('id', 'firstname', 'middlename', 'lastname', 'username', 'email', 'role', 'created_at');
 
         // Search by name or email
         if ($request->has('search') && $request->search) {
@@ -26,7 +26,6 @@ class UserController extends Controller
                     ->orWhere('username', 'like', "%{$search}%");
             });
         }
-
 
         // Pagination
         $perPage = $request->get('per_page', 10);
@@ -160,7 +159,7 @@ class UserController extends Controller
      */
     public function statistics()
     {
-        $totalUsers = User::count();
+        $totalUsers = User::select('id')->count();
 
         return response()->json([
             'success' => true,

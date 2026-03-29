@@ -58,7 +58,6 @@ class AuthenticateController extends Controller
         return response()->json([
             'user' => $user,
             'roles' => $roles,
-            'permissions' => [],
             'account_status' => $user->status ?? 'active',
             'status' => true,
             'message' => 'Registration successful.',
@@ -118,7 +117,6 @@ class AuthenticateController extends Controller
         return response()->json([
             'user' => $user,
             'roles' => $roles,
-            'permissions' => [],
             'account_status' => $user->status ?? 'active',
             'status' => true,
             'message' => $message,
@@ -154,7 +152,6 @@ class AuthenticateController extends Controller
         return response()->json([
             'user' => $user,
             'roles' => $roles,
-            'permissions' => [],
             'account_status' => $user->status ?? 'active',
         ]);
     }

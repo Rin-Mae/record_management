@@ -13,7 +13,7 @@ class StudentController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Student::query();
+        $query = Student::select('id', 'student_id', 'firstname', 'middlename', 'lastname', 'email', 'birthdate', 'age', 'gender', 'address', 'contact_number', 'course', 'year_level', 'created_at');
 
         // Search functionality
         if ($request->has('search') && $request->search) {
@@ -161,85 +161,85 @@ class StudentController extends Controller
      */
     public function statistics(Request $request)
     {
-        // Total students count
-        $totalStudents = Student::count();
-
-        // Basic Education Center courses with labels
-        $becCoursesConfig = [
-            ['code' => 'ELEM', 'label' => 'Elementary'],
-            ['code' => 'JHS', 'label' => 'Junior High'],
-            ['code' => 'SHS-ABM', 'label' => 'SHS-ABM'],
-            ['code' => 'SHS-STEM', 'label' => 'SHS-STEM'],
-            ['code' => 'SHS-HUMSS', 'label' => 'SHS-HUMSS'],
-            ['code' => 'SHS-HE', 'label' => 'SHS-HE'],
-            ['code' => 'SHS-ICT', 'label' => 'SHS-ICT'],
+        // Define course groups
+        $courseGroups = [
+            'bec' => [
+                ['code' => 'ELEM', 'label' => 'Elementary'],
+                ['code' => 'JHS', 'label' => 'Junior High'],
+                ['code' => 'SHS-ABM', 'label' => 'SHS-ABM'],
+                ['code' => 'SHS-STEM', 'label' => 'SHS-STEM'],
+                ['code' => 'SHS-HUMSS', 'label' => 'SHS-HUMSS'],
+                ['code' => 'SHS-HE', 'label' => 'SHS-HE'],
+                ['code' => 'SHS-ICT', 'label' => 'SHS-ICT'],
+            ],
+            'college' => [
+                ['code' => 'BSGE', 'label' => 'BSGE'],
+                ['code' => 'BSA', 'label' => 'BSA'],
+                ['code' => 'BEEd', 'label' => 'BEEd'],
+                ['code' => 'BSEd', 'label' => 'BSEd'],
+                ['code' => 'BSEd-Math', 'label' => 'BSEd-Math'],
+                ['code' => 'BSEd-English', 'label' => 'BSEd-Eng'],
+                ['code' => 'BSEd-Filipino', 'label' => 'BSEd-Fil'],
+                ['code' => 'BSEd-Science', 'label' => 'BSEd-Sci'],
+                ['code' => 'BSCrim', 'label' => 'BSCrim'],
+                ['code' => 'BSN', 'label' => 'BSN'],
+                ['code' => 'AB-PolSci', 'label' => 'AB-PolSci'],
+                ['code' => 'AB-English', 'label' => 'AB-Eng'],
+                ['code' => 'ABCom', 'label' => 'ABCom'],
+                ['code' => 'BSBA', 'label' => 'BSBA'],
+                ['code' => 'BSBA-FM', 'label' => 'BSBA-FM'],
+                ['code' => 'BSBA-MM', 'label' => 'BSBA-MM'],
+                ['code' => 'BSBA-HRM', 'label' => 'BSBA-HRM'],
+                ['code' => 'BSMA', 'label' => 'BSMA'],
+                ['code' => 'BSIT', 'label' => 'BSIT'],
+                ['code' => 'BSHM', 'label' => 'BSHM'],
+            ],
+            'graduate' => [
+                ['code' => 'Ph.D', 'label' => 'Ph.D'],
+                ['code' => 'Ed.D', 'label' => 'Ed.D'],
+                ['code' => 'MA.Ed', 'label' => 'MA.Ed'],
+                ['code' => 'MA.Ed-LL', 'label' => 'MA.Ed-LL'],
+                ['code' => 'MPA', 'label' => 'MPA'],
+                ['code' => 'MBA', 'label' => 'MBA'],
+            ],
         ];
         
-        $becData = [];
-        $becTotal = 0;
-        foreach ($becCoursesConfig as $course) {
-            $count = Student::where('course', $course['code'])->count();
-            $becData[] = ['name' => $course['label'], 'count' => $count];
-            $becTotal += $count;
-        }
-
-        // College courses with labels
-        $collegeCoursesConfig = [
-            ['code' => 'BSGE', 'label' => 'BSGE'],
-            ['code' => 'BSA', 'label' => 'BSA'],
-            ['code' => 'BEEd', 'label' => 'BEEd'],
-            ['code' => 'BSEd', 'label' => 'BSEd'],
-            ['code' => 'BSEd-Math', 'label' => 'BSEd-Math'],
-            ['code' => 'BSEd-English', 'label' => 'BSEd-Eng'],
-            ['code' => 'BSEd-Filipino', 'label' => 'BSEd-Fil'],
-            ['code' => 'BSEd-Science', 'label' => 'BSEd-Sci'],
-            ['code' => 'BSCrim', 'label' => 'BSCrim'],
-            ['code' => 'BSN', 'label' => 'BSN'],
-            ['code' => 'AB-PolSci', 'label' => 'AB-PolSci'],
-            ['code' => 'AB-English', 'label' => 'AB-Eng'],
-            ['code' => 'ABCom', 'label' => 'ABCom'],
-            ['code' => 'BSBA', 'label' => 'BSBA'],
-            ['code' => 'BSBA-FM', 'label' => 'BSBA-FM'],
-            ['code' => 'BSBA-MM', 'label' => 'BSBA-MM'],
-            ['code' => 'BSBA-HRM', 'label' => 'BSBA-HRM'],
-            ['code' => 'BSMA', 'label' => 'BSMA'],
-            ['code' => 'BSIT', 'label' => 'BSIT'],
-            ['code' => 'BSHM', 'label' => 'BSHM'],
-        ];
+        // Get all course codes
+        $allCourseCodes = array_merge(
+            array_column($courseGroups['bec'], 'code'),
+            array_column($courseGroups['college'], 'code'),
+            array_column($courseGroups['graduate'], 'code')
+        );
         
-        $collegeData = [];
-        $collegeTotal = 0;
-        foreach ($collegeCoursesConfig as $course) {
-            $count = Student::where('course', $course['code'])->count();
-            $collegeData[] = ['name' => $course['label'], 'count' => $count];
-            $collegeTotal += $count;
-        }
-
-        // Graduate courses with labels
-        $graduateCoursesConfig = [
-            ['code' => 'Ph.D', 'label' => 'Ph.D'],
-            ['code' => 'Ed.D', 'label' => 'Ed.D'],
-            ['code' => 'MA.Ed', 'label' => 'MA.Ed'],
-            ['code' => 'MA.Ed-LL', 'label' => 'MA.Ed-LL'],
-            ['code' => 'MPA', 'label' => 'MPA'],
-            ['code' => 'MBA', 'label' => 'MBA'],
-        ];
+        // Single query to get all course counts
+        $courseCounts = Student::select('course')
+            ->whereIn('course', $allCourseCodes)
+            ->groupBy('course')
+            ->selectRaw('course, COUNT(*) as count')
+            ->get()
+            ->keyBy('course')
+            ->pluck('count')
+            ->toArray();
         
-        $graduateData = [];
-        $graduateTotal = 0;
-        foreach ($graduateCoursesConfig as $course) {
-            $count = Student::where('course', $course['code'])->count();
-            $graduateData[] = ['name' => $course['label'], 'count' => $count];
-            $graduateTotal += $count;
-        }
+        // Process each group
+        $processCourseGroup = function($group) use ($courseCounts) {
+            return array_map(
+                fn($course) => ['name' => $course['label'], 'count' => $courseCounts[$course['code']] ?? 0],
+                $group
+            );
+        };
+        
+        $becData = $processCourseGroup($courseGroups['bec']);
+        $collegeData = $processCourseGroup($courseGroups['college']);
+        $graduateData = $processCourseGroup($courseGroups['graduate']);
 
         return response()->json([
             'success' => true,
             'data' => [
-                'total' => $totalStudents,
-                'bec' => $becTotal,
-                'college' => $collegeTotal,
-                'graduate' => $graduateTotal,
+                'total' => Student::count(),
+                'bec' => array_sum(array_column($becData, 'count')),
+                'college' => array_sum(array_column($collegeData, 'count')),
+                'graduate' => array_sum(array_column($graduateData, 'count')),
                 'becCourses' => $becData,
                 'collegeCourses' => $collegeData,
                 'graduateCourses' => $graduateData,

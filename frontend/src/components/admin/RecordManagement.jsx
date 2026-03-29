@@ -544,7 +544,7 @@ export default function RecordManagement() {
               </p>
             </div>
             <button
-              className="btn btn-success d-flex align-items-center gap-2"
+              className="btn btn-info d-flex text-light align-items-center gap-2"
               onClick={openCreateModal}
             >
               <FiPlus size={18} />
@@ -554,7 +554,7 @@ export default function RecordManagement() {
 
           {/* Search and Filter Bar */}
           <div className="card border-0 shadow-sm mb-4">
-            <div className="card-body">
+            <div className="card-body bg-info bg-opacity-10">
               <div className="row g-3">
                 <div className="col-md-12 col-lg-6">
                   <div className="input-group">
@@ -636,7 +636,7 @@ export default function RecordManagement() {
               ) : (
                 <div className="table-responsive">
                   <table className="table table-hover align-middle mb-0">
-                    <thead className="table-light">
+                    <thead className="table-info">
                       <tr>
                         <th>Student</th>
                         <th>Record Type</th>
@@ -696,7 +696,7 @@ export default function RecordManagement() {
                           <td>
                             <div className="d-flex gap-1">
                               <button
-                                className="btn btn-sm btn-outline-warning"
+                                className="btn btn-sm btn-outline-primary"
                                 onClick={() => openEditModal(record)}
                                 title="Edit"
                               >

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\StudentRecord;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -22,7 +23,7 @@ class StudentRecordController extends Controller
             ], 422);
         }
 
-        $query = StudentRecord::with(['student', 'files'])
+        $query = StudentRecord::with(['student:id,student_id,firstname,lastname,course', 'files:id,student_record_id,file_path,file_name'])
             ->where('record_type', $type);
 
         // Search functionality
@@ -55,19 +56,6 @@ class StudentRecordController extends Controller
         // Pagination
         $perPage = $request->get('per_page', 10);
         $records = $query->paginate($perPage);
-
-        // Append file URLs
-        $records->getCollection()->transform(function ($record) {
-            if ($record->file_path) {
-                $record->file_url = asset('storage/' . $record->file_path);
-            }
-            // Append URLs for multi-file records
-            $record->files->transform(function ($file) {
-                $file->file_url = asset('storage/' . $file->file_path);
-                return $file;
-            });
-            return $record;
-        });
 
         return response()->json([
             'success' => true,
@@ -130,10 +118,6 @@ class StudentRecordController extends Controller
         }
 
         $record->load(['student', 'files']);
-        $record->files->transform(function ($file) {
-            $file->file_url = asset('storage/' . $file->file_path);
-            return $file;
-        });
 
         return response()->json([
             'success' => true,
@@ -223,10 +207,6 @@ class StudentRecordController extends Controller
         }
 
         $record->load('student');
-        $record->files->transform(function ($file) {
-            $file->file_url = asset('storage/' . $file->file_path);
-            return $file;
-        });
 
         return response()->json([
             'success' => true,
@@ -270,9 +250,13 @@ class StudentRecordController extends Controller
      */
     public function types()
     {
+        $types = Cache::rememberForever('record_types', function () {
+            return StudentRecord::RECORD_TYPES;
+        });
+
         return response()->json([
             'success' => true,
-            'data' => StudentRecord::RECORD_TYPES,
+            'data' => $types,
         ]);
     }
 }

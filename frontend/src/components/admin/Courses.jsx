@@ -262,7 +262,7 @@ export default function Courses() {
 
             {/* Filters and Search */}
             <div className="card">
-              <div className="card-body">
+              <div className="card-body bg-success bg-opacity-10">
                 <div className="row g-2">
                   {/* Search */}
                   <div className="col-12 col-md-8">
@@ -332,7 +332,7 @@ export default function Courses() {
               ) : (
                 <div className="table-responsive">
                   <table className="table table-hover align-middle mb-0">
-                    <thead className="table-light">
+                    <thead className="table-success">
                       <tr>
                         <th>Code</th>
                         <th>Name</th>
@@ -345,7 +345,7 @@ export default function Courses() {
                       {courses.map((course) => (
                         <tr key={course.id}>
                           <td>
-                            <span className="badge bg-primary">
+                            <span className="badge btn btn-success">
                               {course.code}
                             </span>
                           </td>
@@ -366,7 +366,7 @@ export default function Courses() {
                           <td>
                             <div className="d-flex gap-1">
                               <button
-                                className="btn btn-sm btn-outline-warning"
+                                className="btn btn-sm btn-outline-primary"
                                 onClick={() => openEditModal(course)}
                                 title="Edit"
                               >

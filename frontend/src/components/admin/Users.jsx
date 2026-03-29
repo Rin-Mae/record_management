@@ -64,8 +64,8 @@ function Users() {
           </div>
 
           {/* Search */}
-          <div className="card mb-4">
-            <div className="card-body">
+          <div className="card mb-4 ">
+            <div className="card-body bg-success bg-opacity-10">
               <form onSubmit={handleSearch} className="row g-3">
                 <div className="col-md-10">
                   <div className="input-group">
@@ -74,7 +74,7 @@ function Users() {
                     </span>
                     <input
                       type="text"
-                      className="form-control"
+                      className="form-control  "
                       placeholder="Search by name, email, or username"
                       value={search}
                       onChange={(e) => {
@@ -106,10 +106,10 @@ function Users() {
           </div>
 
           {/* Users Table */}
-          <div className="card">
-            <div className="card-body">
+          <div className="card ">
+            <div className="card-body bg-success bg-opacity-10">
               {loading ? (
-                <div className="text-center py-5">
+                <div className="text-center py-5 ">
                   <div className="spinner-border text-success" role="status">
                     <span className="visually-hidden">Loading...</span>
                   </div>
@@ -121,7 +121,7 @@ function Users() {
               ) : (
                 <div className="table-responsive">
                   <table className="table table-hover align-middle">
-                    <thead className="table-light">
+                    <thead className="table-success bg-opacity-10">
                       <tr>
                         <th>Name</th>
                         <th>Email</th>
