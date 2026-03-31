@@ -102,4 +102,12 @@ class User extends Authenticatable
         return $query->where('role', 'student')
             ->where('is_admin_verified', false);
     }
+
+    /**
+     * Get the course that the student is enrolled in.
+     */
+    public function course()
+    {
+        return $this->belongsTo(Course::class, 'course_id');
+    }
 }

@@ -52,8 +52,6 @@ function Students() {
     setSearch,
     courseFilter,
     setCourseFilter,
-    yearLevelFilter,
-    setYearLevelFilter,
     handleSearch,
 
     // Create/Edit Modal
@@ -154,7 +152,7 @@ function Students() {
                 </div>
 
                 {/* Course Filter */}
-                <div className="col-md-4">
+                <div className="col-md-6">
                   <select
                     className="form-select"
                     value={courseFilter}
@@ -176,22 +174,6 @@ function Students() {
                         ),
                       )
                     )}
-                  </select>
-                </div>
-
-                {/* Year Level Filter */}
-                <div className="col-md-2">
-                  <select
-                    className="form-select"
-                    value={yearLevelFilter}
-                    onChange={(e) => setYearLevelFilter(e.target.value)}
-                  >
-                    <option value="">All Years</option>
-                    <option value="1">1st Year</option>
-                    <option value="2">2nd Year</option>
-                    <option value="3">3rd Year</option>
-                    <option value="4">4th Year</option>
-                    <option value="5">5th Year</option>
                   </select>
                 </div>
               </form>
@@ -414,7 +396,12 @@ function Students() {
                     {/* Email */}
                     <div className="col-md-4">
                       <label className="form-label">
-                        Email <span className="text-danger">*</span>
+                        Email{" "}
+                        {modalMode === "create" ? (
+                          ""
+                        ) : (
+                          <span className="text-danger">*</span>
+                        )}
                       </label>
                       <input
                         type="email"
@@ -422,7 +409,7 @@ function Students() {
                         name="email"
                         value={formData.email}
                         onChange={handleInputChange}
-                        required
+                        required={modalMode !== "create"}
                       />
                       {formErrors.email && (
                         <div className="invalid-feedback">
@@ -501,12 +488,12 @@ function Students() {
                     </div>
 
                     {/* Course */}
-                    <div className="col-md-6">
+                    <div className="col-md-12">
                       <label className="form-label">Course</label>
                       <select
                         className="form-select"
                         name="course"
-                        value={formData.course}
+                        value={formData.course || ""}
                         onChange={handleInputChange}
                       >
                         <option value="">Select Course</option>
@@ -527,35 +514,9 @@ function Students() {
                         )}
                       </select>
                     </div>
-
-                    {/* Year Level */}
-                    <div className="col-md-6">
-                      <label className="form-label">Year Level</label>
-                      <select
-                        className="form-select"
-                        name="year_level"
-                        value={formData.year_level}
-                        onChange={handleInputChange}
-                      >
-                        <option value="">Select Year</option>
-                        <option value="1">1st Year</option>
-                        <option value="2">2nd Year</option>
-                        <option value="3">3rd Year</option>
-                        <option value="4">4th Year</option>
-                        <option value="5">5th Year</option>
-                      </select>
-                    </div>
                   </div>
                 </div>
                 <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => setShowModal(false)}
-                    disabled={submitting}
-                  >
-                    Cancel
-                  </button>
                   <button
                     type="submit"
                     className="btn btn-success"
@@ -689,27 +650,6 @@ function Students() {
                       </div>
                       <div className="fw-medium">
                         {selectedStudent.course || "-"}
-                      </div>
-                    </div>
-
-                    {/* Year Level */}
-                    <div className="col-6">
-                      <div className="d-flex align-items-center text-muted small mb-1">
-                        <FiUser className="me-2" size={14} />
-                        Year Level
-                      </div>
-                      <div className="fw-medium">
-                        {selectedStudent.year_level
-                          ? `${selectedStudent.year_level}${
-                              selectedStudent.year_level === 1
-                                ? "st"
-                                : selectedStudent.year_level === 2
-                                  ? "nd"
-                                  : selectedStudent.year_level === 3
-                                    ? "rd"
-                                    : "th"
-                            } Year`
-                          : "-"}
                       </div>
                     </div>
 

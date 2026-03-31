@@ -27,14 +27,16 @@ const ActivityLogs = lazy(() => import("./components/admin/ActivityLogs"));
 const StudentVerification = lazy(
   () => import("./components/admin/StudentVerification"),
 );
+const StudentRecordsChecklist = lazy(
+  () => import("./components/admin/StudentRecordsChecklist"),
+);
 const PendingVerification = lazy(
   () => import("./components/admin/PendingVerification"),
 );
 const MyRecords = lazy(() => import("./components/student/MyRecords"));
 const UploadRecord = lazy(() => import("./components/student/UploadRecord"));
-// Enrollment list UI removed
+const EditProfile = lazy(() => import("./components/student/EditProfile"));
 
-// Loading spinner component
 function LoadingSpinner() {
   return (
     <div className="d-flex justify-content-center align-items-center vh-100">
@@ -169,8 +171,6 @@ function App() {
                 }
               />
 
-              {/* Enrollment List UI removed */}
-
               {/* Records Management - Unified all records view */}
               <Route
                 path="/admin/records"
@@ -263,6 +263,16 @@ function App() {
                 }
               />
 
+              {/* Records Checklist */}
+              <Route
+                path="/admin/records-checklist"
+                element={
+                  <AdminRoute>
+                    <StudentRecordsChecklist />
+                  </AdminRoute>
+                }
+              />
+
               {/* Student Routes */}
               <Route
                 path="/student/records"
@@ -277,6 +287,14 @@ function App() {
                 element={
                   <StudentRoute>
                     <UploadRecord />
+                  </StudentRoute>
+                }
+              />
+              <Route
+                path="/student/profile"
+                element={
+                  <StudentRoute>
+                    <EditProfile />
                   </StudentRoute>
                 }
               />

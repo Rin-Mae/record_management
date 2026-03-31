@@ -33,24 +33,6 @@ class StudentRecord extends Model
     ];
 
     /**
-     * Valid record types.
-     */
-    public const RECORD_TYPES = [
-        'birth-certificate' => 'Birth Certificate',
-        'marriage-certificate' => 'Marriage Certificate',
-        'tor' => 'Transcript of Records',
-        'comprehensive-exam' => 'Comprehensive Exam',
-    ];
-
-    /**
-     * Record types that use simplified form (student + files only).
-     * All types now use this form.
-     */
-    public const SIMPLIFIED_TYPES = [
-        'birth-certificate', 'marriage-certificate', 'tor', 'comprehensive-exam',
-    ];
-
-    /**
      * The attributes that should be cast.
      *
      * @var array<string, string>
@@ -98,14 +80,6 @@ class StudentRecord extends Model
     public function files()
     {
         return $this->hasMany(RecordFile::class, 'student_record_id');
-    }
-
-    /**
-     * Check if this record type uses simplified form.
-     */
-    public static function isSimplifiedType($type)
-    {
-        return in_array($type, self::SIMPLIFIED_TYPES);
     }
 
     /**

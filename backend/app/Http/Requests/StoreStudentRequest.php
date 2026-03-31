@@ -22,11 +22,11 @@ class StoreStudentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'student_id' => ['required', 'string', 'max:50', 'unique:students,student_id', 'regex:/^[A-Z0-9\-]+$/'],
+            'student_id' => ['required', 'string', 'max:50', 'unique:users,student_id', 'regex:/^[A-Z0-9\-]+$/'],
             'firstname' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z ]+$/'],
             'middlename' => ['nullable', 'string', 'max:255', 'regex:/^[a-zA-Z ]+$/'],
             'lastname' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z ]+$/'],
-            'email' => ['required', 'email', 'max:255', 'unique:students,email'],
+            'email' => ['nullable', 'email', 'max:255', 'unique:users,email'],
             'birthdate' => ['nullable', 'date', 'before:today'],
             'age' => ['nullable', 'integer', 'min:1', 'max:150'],
             'address' => ['nullable', 'string', 'max:500'],
@@ -50,7 +50,6 @@ class StoreStudentRequest extends FormRequest
             'firstname.regex' => 'First name can only contain letters and spaces.',
             'lastname.required' => 'Last name is required.',
             'lastname.regex' => 'Last name can only contain letters and spaces.',
-            'email.required' => 'Email is required.',
             'email.unique' => 'This email address is already used.',
             'contact_number.regex' => 'Contact number must be a valid format.',
             'year_level.min' => 'Year level must be at least 1.',

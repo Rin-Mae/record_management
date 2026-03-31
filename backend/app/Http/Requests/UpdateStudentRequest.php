@@ -25,11 +25,11 @@ class UpdateStudentRequest extends FormRequest
         $studentId = $this->route('student')->id;
 
         return [
-            'student_id' => ['sometimes', 'required', 'string', 'max:50', 'regex:/^[A-Z0-9\-]+$/', Rule::unique('students', 'student_id')->ignore($studentId)],
+            'student_id' => ['sometimes', 'required', 'string', 'max:50', 'regex:/^[A-Z0-9\-]+$/', Rule::unique('users', 'student_id')->ignore($studentId)],
             'firstname' => ['sometimes', 'required', 'string', 'max:255', 'regex:/^[a-zA-Z ]+$/'],
             'middlename' => ['nullable', 'string', 'max:255', 'regex:/^[a-zA-Z ]+$/'],
             'lastname' => ['sometimes', 'required', 'string', 'max:255', 'regex:/^[a-zA-Z ]+$/'],
-            'email' => ['sometimes', 'required', 'email', 'max:255', Rule::unique('students', 'email')->ignore($studentId)],
+            'email' => ['nullable', 'email', 'max:255', Rule::unique('users', 'email')->ignore($studentId)],
             'birthdate' => ['nullable', 'date', 'before:today'],
             'age' => ['nullable', 'integer', 'min:1', 'max:150'],
             'address' => ['nullable', 'string', 'max:500'],

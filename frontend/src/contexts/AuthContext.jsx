@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useRef } from "react";
 import AuthServices from "../services/AuthServices.jsx";
+import { refreshCsrfToken } from "../services/api.jsx";
 
 const AuthContext = createContext(null);
 
@@ -47,6 +48,10 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     const loginResponse = await AuthServices.login(credentials);
+
+    // Refresh CSRF token for the new session
+    await refreshCsrfToken();
+
     const payload = await AuthServices.getUser();
     const normalized = payload?.user
       ? {
@@ -82,6 +87,7 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
+    setUser,
     loading,
     login,
     logout,

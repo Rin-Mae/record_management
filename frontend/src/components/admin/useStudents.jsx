@@ -197,7 +197,6 @@ export function useStudents() {
       address: student.address || "",
       contact_number: student.contact_number || "",
       course: student.course || "",
-      year_level: student.year_level || "",
     });
     setFormErrors({});
     setModalMode("edit");
@@ -217,28 +216,32 @@ export function useStudents() {
   }, []);
 
   // Handle form input change with validation
-  const handleInputChange = useCallback((e) => {
-    const { name, value } = e.target;
-    let error = null;
+  const handleInputChange = useCallback(
+    (e) => {
+      const { name, value } = e.target;
+      let error = null;
 
-    // Validate based on field type
-    if (name === "student_id") {
-      const validation = validateStudentId(value);
-      if (!validation.isValid) error = validation.message;
-    } else if (name === "firstname" || name === "lastname") {
-      const validation = validateName(value);
-      if (!validation.isValid) error = validation.message;
-    } else if (name === "middlename" && value) {
-      const validation = validateSpecialCharacters(value, ["-", ".", " "]);
-      if (!validation.isValid) error = validation.message;
-    } else if (name === "email" && value) {
-      const validation = validateEmail(value);
-      if (!validation.isValid) error = validation.message;
-    }
+      // Validate based on field type
+      if (name === "student_id") {
+        const validation = validateStudentId(value);
+        if (!validation.isValid) error = validation.message;
+      } else if (name === "firstname" || name === "lastname") {
+        const validation = validateName(value);
+        if (!validation.isValid) error = validation.message;
+      } else if (name === "middlename" && value) {
+        const validation = validateSpecialCharacters(value, ["-", ".", " "]);
+        if (!validation.isValid) error = validation.message;
+      } else if (name === "email" && value && modalMode !== "create") {
+        // Only validate email if provided and not in create mode (email is optional for admin-created students)
+        const validation = validateEmail(value);
+        if (!validation.isValid) error = validation.message;
+      }
 
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    setFormErrors((prev) => ({ ...prev, [name]: error ? [error] : null }));
-  }, []);
+      setFormData((prev) => ({ ...prev, [name]: value }));
+      setFormErrors((prev) => ({ ...prev, [name]: error ? [error] : null }));
+    },
+    [modalMode],
+  );
 
   // Handle form submit
   const handleSubmit = useCallback(
@@ -252,9 +255,6 @@ export function useStudents() {
           ...formData,
           birthdate: formatDateForBackend(formData.birthdate),
           age: formData.age ? parseInt(formData.age) : null,
-          year_level: formData.year_level
-            ? parseInt(formData.year_level)
-            : null,
         };
 
         if (modalMode === "create") {

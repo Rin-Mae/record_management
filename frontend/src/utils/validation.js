@@ -2,7 +2,7 @@
  * Special characters validation patterns
  */
 export const SPECIAL_CHARS_PATTERN = /[!@#$%^&*()_+=\[\]{};':"\\|,.<>\/?]/g;
-export const ALLOWED_SPECIAL_CHARS = ['-', '_', '.', '@']; // Only for email @, names can have - or .
+const ALLOWED_SPECIAL_CHARS = ['-', '_', '.', '@']; // Only for email @, names can have - or .
 
 /**
  * Validate if a string contains disallowed special characters
@@ -130,51 +130,6 @@ export const validatePassword = (password) => {
 
   if (password.length > 128) {
     return { isValid: false, message: 'Password must be less than 128 characters' };
-  }
-
-  return { isValid: true, message: '' };
-};
-
-/**
- * Validate file size (in MB)
- * @param {number} fileSizeInBytes - File size in bytes
- * @param {number} maxSizeInMB - Maximum allowed size in MB (default 10)
- * @returns {object} - { isValid: boolean, message: string }
- */
-export const validateFileSize = (fileSizeInBytes, maxSizeInMB = 10) => {
-  const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
-
-  if (fileSizeInBytes > maxSizeInBytes) {
-    return {
-      isValid: false,
-      message: `File size exceeds ${maxSizeInMB}MB limit`,
-    };
-  }
-
-  return { isValid: true, message: '' };
-};
-
-/**
- * Validate allowed file types
- * @param {string} fileName - File name to validate
- * @param {array} allowedExtensions - Allowed file extensions (default: pdf, doc, docx, xls, xlsx, jpg, jpeg, png)
- * @returns {object} - { isValid: boolean, message: string }
- */
-export const validateFileType = (
-  fileName,
-  allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'jpg', 'jpeg', 'png', 'gif']
-) => {
-  if (!fileName) {
-    return { isValid: false, message: 'File name is required' };
-  }
-
-  const extension = fileName.split('.').pop().toLowerCase();
-
-  if (!allowedExtensions.includes(extension)) {
-    return {
-      isValid: false,
-      message: `File type .${extension} is not allowed. Allowed types: ${allowedExtensions.join(', ')}`,
-    };
   }
 
   return { isValid: true, message: '' };

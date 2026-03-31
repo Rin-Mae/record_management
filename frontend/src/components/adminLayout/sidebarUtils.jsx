@@ -9,6 +9,7 @@ import {
   FiActivity,
   FiCheckCircle,
   FiClock,
+  FiList,
 } from "react-icons/fi";
 
 // Icon mapping
@@ -22,6 +23,7 @@ export const ICONS = {
   FiActivity,
   FiCheckCircle,
   FiClock,
+  FiList,
 };
 
 // Navigation items for the sidebar
@@ -49,6 +51,12 @@ export const NAV_ITEMS = [
     label: "Student Verification",
     iconName: "FiCheckCircle",
     match: /^\/admin\/student-verification$/,
+  },
+  {
+    path: "/admin/records-checklist",
+    label: "Records Checklist",
+    iconName: "FiList",
+    match: /^\/admin\/records-checklist$/,
   },
   {
     path: "/admin/courses",

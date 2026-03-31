@@ -43,12 +43,12 @@ function Login() {
     try {
       const user = await login({ email, password });
       toast.success("Login successful!");
-      // Redirect admin users to admin dashboard, others to home
+      // Redirect admin users to admin dashboard, others to my records
       const roles = user?.roles || [];
       if (roles.includes("admin") || roles.includes("administrator")) {
         navigate("/admin/dashboard");
       } else {
-        navigate("/");
+        navigate("/student/records");
       }
     } catch (err) {
       const msg = err?.response?.data?.message || "Login failed";

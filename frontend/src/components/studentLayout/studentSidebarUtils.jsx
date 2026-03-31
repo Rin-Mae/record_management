@@ -1,9 +1,10 @@
-import { FiFileText, FiUploadCloud } from "react-icons/fi";
+import { FiFileText, FiUploadCloud, FiSettings } from "react-icons/fi";
 
 // Icon mapping
 export const ICONS = {
   FiFileText,
   FiUploadCloud,
+  FiSettings,
 };
 
 // Navigation items for the student sidebar
@@ -17,6 +18,11 @@ export const MENU_ITEMS = [
     label: "Upload a Record",
     path: "/student/upload",
     iconName: "FiUploadCloud",
+  },
+  {
+    label: "Edit Profile",
+    path: "/student/profile",
+    iconName: "FiSettings",
   },
 ];
 

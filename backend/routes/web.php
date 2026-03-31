@@ -51,6 +51,7 @@ Route::group(['middleware' => 'web'], function () {
         Route::delete('/student-verifications/{id}', [StudentVerificationController::class, 'deleteApplication']);
 
         Route::get('/students/statistics', [StudentController::class, 'statistics']);
+        Route::get('/students/records-checklist', [StudentController::class, 'recordsChecklist']);
         Route::get('/students/verified-with-records/{type}', [StudentController::class, 'verifiedStudentsWithRecords']);
         Route::apiResource('students', StudentController::class);
 
@@ -76,8 +77,6 @@ Route::group(['middleware' => 'web'], function () {
         // Record verification endpoints (admin only)
         Route::get('/records/pending-verification', [StudentRecordController::class, 'getPendingVerification']);
         Route::post('/records/{record}/verify', [StudentRecordController::class, 'verifyRecord']);
-
-        // (Enrollment list functionality removed)
 
         // User management routes
         Route::get('/users/statistics', [UserController::class, 'statistics']);

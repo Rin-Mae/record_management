@@ -95,8 +95,14 @@ class UserController extends Controller
             'firstname',
             'middlename',
             'lastname',
+            'suffix',
             'username',
             'email',
+            'birthdate',
+            'age',
+            'gender',
+            'address',
+            'contact_number',
             'role',
         ]);
 

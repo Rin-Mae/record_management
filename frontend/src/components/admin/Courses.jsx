@@ -538,8 +538,8 @@ export default function Courses() {
                       <option value="Basic Education Center">
                         Basic Education Center
                       </option>
-                      <option value="College">College</option>
-                      <option value="Graduate">Graduate</option>
+                      <option value="College Degree">College Degree</option>
+                      <option value="Graduate Program">Graduate Program</option>
                     </select>
                     {formErrors.department && (
                       <div className="invalid-feedback d-block">
@@ -568,14 +568,6 @@ export default function Courses() {
                   </div>
                 </div>
                 <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => setShowModal(false)}
-                    disabled={submitting}
-                  >
-                    Cancel
-                  </button>
                   <button
                     type="submit"
                     className="btn btn-success d-flex align-items-center gap-2"
@@ -622,13 +614,6 @@ export default function Courses() {
                 </p>
               </div>
               <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setShowDeleteModal(false)}
-                >
-                  Cancel
-                </button>
                 <button
                   type="button"
                   className="btn btn-danger"

@@ -1,7 +1,7 @@
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { FiMenu, FiUsers, FiBook, FiBookOpen, FiAward } from "react-icons/fi";
+import { FiMenu, FiUsers, FiBook } from "react-icons/fi";
 import {
   AreaChart,
   Area,
@@ -20,12 +20,8 @@ function AdminDashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [stats, setStats] = useState({
     total: 0,
-    bec: 0,
-    college: 0,
-    graduate: 0,
-    becCourses: [],
-    collegeCourses: [],
-    graduateCourses: [],
+    departments: {},
+    departmentTotals: {},
   });
   const [loading, setLoading] = useState(true);
 
@@ -39,6 +35,7 @@ function AdminDashboard() {
     try {
       const response = await StudentServices.getStatistics();
       if (response.success) {
+        console.log("Statistics data:", response.data);
         setStats(response.data);
       }
     } catch (error) {
@@ -61,6 +58,24 @@ function AdminDashboard() {
     setSidebarVisible(!sidebarVisible);
     window.dispatchEvent(new CustomEvent("toggle-admin-sidebar"));
   };
+
+  // Get department display name
+  const getDeptDisplayName = (deptKey) => {
+    const names = {
+      basic_education_center: "Basic Education",
+      college_degree: "College",
+      graduate_program: "Graduate",
+    };
+    return names[deptKey] || deptKey.replace(/_/g, " ").toUpperCase();
+  };
+
+  // Get colors for departments
+  const getDeptColor = (index) => {
+    const colors = ["#198754", "#0dcaf0", "#ffc107", "#6f42c1", "#fd7e14"];
+    return colors[index % colors.length];
+  };
+
+  const departmentKeys = Object.keys(stats.departments || {});
 
   return (
     <>
@@ -91,8 +106,8 @@ function AdminDashboard() {
             </div>
           </div>
 
-          {/* Stats Cards */}
-          <div className="row g-4">
+          {/* Total Students Card */}
+          <div className="row g-4 mb-4">
             <div className="col-md-3 col-sm-6">
               <div className="card border-0 shadow-sm h-100">
                 <div className="card-body bg-info bg-opacity-10">
@@ -119,355 +134,151 @@ function AdminDashboard() {
                 </div>
               </div>
             </div>
-            <div className="col-md-3 col-sm-6">
-              <div className="card border-0 shadow-sm h-100">
-                <div className="card-body bg-success bg-opacity-10">
-                  <div className="d-flex align-items-center">
-                    <div className="flex-shrink-0">
-                      <div
-                        className="rounded-circle bg-success bg-opacity-10 d-flex align-items-center justify-content-center"
-                        style={{ width: "48px", height: "48px" }}
-                      >
-                        <FiBook className="text-success" size={24} />
+
+            {/* Dynamic Department Cards */}
+            {departmentKeys.map((deptKey, idx) => (
+              <div key={deptKey} className="col-md-3 col-sm-6">
+                <div className="card border-0 shadow-sm h-100">
+                  <div
+                    className="card-body bg-opacity-10"
+                    style={{
+                      backgroundColor: getDeptColor(idx) + "20",
+                    }}
+                  >
+                    <div className="d-flex align-items-center">
+                      <div className="flex-shrink-0">
+                        <div
+                          className="rounded-circle d-flex align-items-center justify-content-center"
+                          style={{
+                            width: "48px",
+                            height: "48px",
+                            backgroundColor: getDeptColor(idx) + "20",
+                          }}
+                        >
+                          <FiBook
+                            style={{ color: getDeptColor(idx) }}
+                            size={24}
+                          />
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex-grow-1 ms-3">
-                      <h6 className="text-muted mb-1">Basic Education</h6>
-                      <h3 className="mb-0">
-                        {loading ? (
-                          <span className="spinner-border spinner-border-sm" />
-                        ) : (
-                          stats.bec
-                        )}
-                      </h3>
+                      <div className="flex-grow-1 ms-3">
+                        <h6 className="text-muted mb-1">
+                          {getDeptDisplayName(deptKey)}
+                        </h6>
+                        <h3 className="mb-0">
+                          {loading ? (
+                            <span className="spinner-border spinner-border-sm" />
+                          ) : (
+                            stats.departmentTotals[deptKey] || 0
+                          )}
+                        </h3>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="col-md-3 col-sm-6">
-              <div className="card border-0 shadow-sm h-100">
-                <div className="card-body bg-info bg-opacity-10">
-                  <div className="d-flex align-items-center">
-                    <div className="flex-shrink-0">
-                      <div
-                        className="rounded-circle bg-info bg-opacity-10 d-flex align-items-center justify-content-center"
-                        style={{ width: "48px", height: "48px" }}
-                      >
-                        <FiBookOpen className="text-info" size={24} />
-                      </div>
-                    </div>
-                    <div className="flex-grow-1 ms-3">
-                      <h6 className="text-muted mb-1">College</h6>
-                      <h3 className="mb-0">
-                        {loading ? (
-                          <span className="spinner-border spinner-border-sm" />
-                        ) : (
-                          stats.college
-                        )}
-                      </h3>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-3 col-sm-6">
-              <div className="card border-0 shadow-sm h-100">
-                <div className="card-body bg-warning bg-opacity-10">
-                  <div className="d-flex align-items-center">
-                    <div className="flex-shrink-0">
-                      <div
-                        className="rounded-circle bg-warning bg-opacity-10 d-flex align-items-center justify-content-center"
-                        style={{ width: "48px", height: "48px" }}
-                      >
-                        <FiAward className="text-warning" size={24} />
-                      </div>
-                    </div>
-                    <div className="flex-grow-1 ms-3">
-                      <h6 className="text-muted mb-1">Graduate</h6>
-                      <h3 className="mb-0">
-                        {loading ? (
-                          <span className="spinner-border spinner-border-sm" />
-                        ) : (
-                          stats.graduate
-                        )}
-                      </h3>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
 
-          {/* Students Chart */}
+          {/* Charts for each department */}
           <div className="row mt-4 g-4">
-            {/* Basic Education Chart */}
-            <div className="col-12">
-              <div className="card border-0 bg-success bg-opacity-10 shadow-sm">
-                <div className="card-header bg-success bg-opacity-10 border-0 py-3">
-                  <h5 className="mb-0 text-success">
-                    <FiBook className="me-2" />
-                    Basic Education Center
-                  </h5>
-                  <small className="text-muted">
-                    Students per course/track
-                  </small>
-                </div>
-                <div className="card-body">
-                  {loading ? (
-                    <div className="text-center py-5">
-                      <div
-                        className="spinner-border text-success"
-                        role="status"
-                      >
-                        <span className="visually-hidden">Loading...</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div style={{ width: "100%", height: 250 }}>
-                      <ResponsiveContainer>
-                        <AreaChart
-                          data={stats.becCourses}
-                          margin={{ top: 10, right: 30, left: 0, bottom: 5 }}
+            {departmentKeys.map((deptKey, idx) => (
+              <div key={deptKey} className="col-12">
+                <div className="card border-0 shadow-sm">
+                  <div
+                    className="card-header border-0 py-3"
+                    style={{
+                      backgroundColor: getDeptColor(idx) + "15",
+                    }}
+                  >
+                    <h5 className="mb-0" style={{ color: getDeptColor(idx) }}>
+                      <FiBook className="me-2" style={{ display: "inline" }} />
+                      {getDeptDisplayName(deptKey)}
+                    </h5>
+                    <small className="text-muted">Students per course</small>
+                  </div>
+                  <div className="card-body">
+                    {loading ? (
+                      <div className="text-center py-5">
+                        <div
+                          className="spinner-border"
+                          style={{ color: getDeptColor(idx) }}
+                          role="status"
                         >
-                          <defs>
-                            <linearGradient
-                              id="colorBEC"
-                              x1="0"
-                              y1="0"
-                              x2="0"
-                              y2="1"
-                            >
-                              <stop
-                                offset="5%"
-                                stopColor="#198754"
-                                stopOpacity={0.8}
-                              />
-                              <stop
-                                offset="95%"
-                                stopColor="#198754"
-                                stopOpacity={0}
-                              />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid
-                            strokeDasharray="3 3"
-                            vertical={false}
-                          />
-                          <XAxis
-                            dataKey="name"
-                            tick={{ fontSize: 11 }}
-                            tickLine={false}
-                            axisLine={false}
-                          />
-                          <YAxis
-                            tick={{ fontSize: 12 }}
-                            tickLine={false}
-                            axisLine={false}
-                            allowDecimals={false}
-                          />
-                          <Tooltip
-                            contentStyle={{
-                              backgroundColor: "#fff",
-                              border: "1px solid #e9ecef",
-                              borderRadius: "8px",
-                              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                            }}
-                            formatter={(value) => [value, "Students"]}
-                          />
-                          <Area
-                            type="linear"
-                            dataKey="count"
-                            stroke="#198754"
-                            strokeWidth={2}
-                            fillOpacity={1}
-                            fill="url(#colorBEC)"
-                          />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    </div>
-                  )}
+                          <span className="visually-hidden">Loading...</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ width: "100%", height: 300 }}>
+                        <ResponsiveContainer>
+                          <AreaChart
+                            data={stats.departments[deptKey] || []}
+                            margin={{ top: 10, right: 30, left: 0, bottom: 60 }}
+                          >
+                            <defs>
+                              <linearGradient
+                                id={`color${idx}`}
+                                x1="0"
+                                y1="0"
+                                x2="0"
+                                y2="1"
+                              >
+                                <stop
+                                  offset="5%"
+                                  stopColor={getDeptColor(idx)}
+                                  stopOpacity={0.8}
+                                />
+                                <stop
+                                  offset="95%"
+                                  stopColor={getDeptColor(idx)}
+                                  stopOpacity={0}
+                                />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid
+                              strokeDasharray="3 3"
+                              vertical={false}
+                            />
+                            <XAxis
+                              dataKey="name"
+                              tick={{ fontSize: 9 }}
+                              tickLine={false}
+                              axisLine={false}
+                              angle={-45}
+                              textAnchor="end"
+                              height={60}
+                            />
+                            <YAxis
+                              tick={{ fontSize: 12 }}
+                              tickLine={false}
+                              axisLine={false}
+                              allowDecimals={false}
+                            />
+                            <Tooltip
+                              contentStyle={{
+                                backgroundColor: "#fff",
+                                border: "1px solid #e9ecef",
+                                borderRadius: "8px",
+                                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                              }}
+                              formatter={(value) => [value, "Students"]}
+                            />
+                            <Area
+                              type="linear"
+                              dataKey="count"
+                              stroke={getDeptColor(idx)}
+                              strokeWidth={2}
+                              fillOpacity={1}
+                              fill={`url(#color${idx})`}
+                            />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-
-            {/* College Chart */}
-            <div className="col-12">
-              <div className="card border-0 bg-info bg-opacity-10 shadow-sm">
-                <div className="card-header bg-info bg-opacity-10 border-0 py-3">
-                  <h5 className="mb-0 text-primary">
-                    <FiBookOpen className="me-2" />
-                    College
-                  </h5>
-                  <small className="text-muted">
-                    Students per degree program
-                  </small>
-                </div>
-                <div className="card-body">
-                  {loading ? (
-                    <div className="text-center py-5">
-                      <div className="spinner-border text-info" role="status">
-                        <span className="visually-hidden">Loading...</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div style={{ width: "100%", height: 300 }}>
-                      <ResponsiveContainer>
-                        <AreaChart
-                          data={stats.collegeCourses}
-                          margin={{ top: 10, right: 30, left: 0, bottom: 60 }}
-                        >
-                          <defs>
-                            <linearGradient
-                              id="colorCollege"
-                              x1="0"
-                              y1="0"
-                              x2="0"
-                              y2="1"
-                            >
-                              <stop
-                                offset="5%"
-                                stopColor="#0dcaf0"
-                                stopOpacity={0.8}
-                              />
-                              <stop
-                                offset="95%"
-                                stopColor="#0dcaf0"
-                                stopOpacity={0}
-                              />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid
-                            strokeDasharray="3 3"
-                            vertical={false}
-                          />
-                          <XAxis
-                            dataKey="name"
-                            tick={{ fontSize: 9 }}
-                            tickLine={false}
-                            axisLine={false}
-                            angle={-45}
-                            textAnchor="end"
-                            height={60}
-                          />
-                          <YAxis
-                            tick={{ fontSize: 12 }}
-                            tickLine={false}
-                            axisLine={false}
-                            allowDecimals={false}
-                          />
-                          <Tooltip
-                            contentStyle={{
-                              backgroundColor: "#fff",
-                              border: "1px solid #e9ecef",
-                              borderRadius: "8px",
-                              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                            }}
-                            formatter={(value) => [value, "Students"]}
-                          />
-                          <Area
-                            type="linear"
-                            dataKey="count"
-                            stroke="#0dcaf0"
-                            strokeWidth={2}
-                            fillOpacity={1}
-                            fill="url(#colorCollege)"
-                          />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Graduate Chart */}
-            <div className="col-12">
-              <div className="card border-0 bg-warning bg-opacity-10 shadow-sm">
-                <div className="card-header bg-warning bg-opacity-10 border-0 py-3">
-                  <h5 className="mb-0 text-warning">
-                    <FiAward className="me-2" />
-                    Graduate
-                  </h5>
-                  <small className="text-muted">Students per program</small>
-                </div>
-                <div className="card-body">
-                  {loading ? (
-                    <div className="text-center py-5">
-                      <div
-                        className="spinner-border text-warning"
-                        role="status"
-                      >
-                        <span className="visually-hidden">Loading...</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div style={{ width: "100%", height: 250 }}>
-                      <ResponsiveContainer>
-                        <AreaChart
-                          data={stats.graduateCourses}
-                          margin={{ top: 10, right: 30, left: 0, bottom: 5 }}
-                        >
-                          <defs>
-                            <linearGradient
-                              id="colorGraduate"
-                              x1="0"
-                              y1="0"
-                              x2="0"
-                              y2="1"
-                            >
-                              <stop
-                                offset="5%"
-                                stopColor="#ffc107"
-                                stopOpacity={0.8}
-                              />
-                              <stop
-                                offset="95%"
-                                stopColor="#ffc107"
-                                stopOpacity={0}
-                              />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid
-                            strokeDasharray="3 3"
-                            vertical={false}
-                          />
-                          <XAxis
-                            dataKey="name"
-                            tick={{ fontSize: 11 }}
-                            tickLine={false}
-                            axisLine={false}
-                          />
-                          <YAxis
-                            tick={{ fontSize: 12 }}
-                            tickLine={false}
-                            axisLine={false}
-                            allowDecimals={false}
-                          />
-                          <Tooltip
-                            contentStyle={{
-                              backgroundColor: "#fff",
-                              border: "1px solid #e9ecef",
-                              borderRadius: "8px",
-                              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                            }}
-                            formatter={(value) => [value, "Students"]}
-                          />
-                          <Area
-                            type="linear"
-                            dataKey="count"
-                            stroke="#ffc107"
-                            strokeWidth={2}
-                            fillOpacity={1}
-                            fill="url(#colorGraduate)"
-                          />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>

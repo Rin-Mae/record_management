@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Course;
 use App\Models\RecordType;
 use App\Http\Requests\StoreStudentRequest;
 use App\Http\Requests\UpdateStudentRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class StudentController extends Controller
 {
@@ -17,7 +20,8 @@ class StudentController extends Controller
     public function index(Request $request)
     {
         $query = User::verifiedStudents()
-            ->select('id', 'student_id', 'firstname', 'middlename', 'lastname', 'email', 'birthdate', 'age', 'gender', 'address', 'contact_number', 'course_id', 'created_at');
+            ->leftJoin('courses', 'users.course_id', '=', 'courses.id')
+            ->select('users.id', 'users.student_id', 'users.firstname', 'users.middlename', 'users.lastname', 'users.email', 'users.birthdate', 'users.age', 'users.gender', 'users.address', 'users.contact_number', 'users.course_id', 'courses.code as course', 'users.created_at');
 
         // Apply search if provided
         if ($request->has('search') && $request->search) {
@@ -58,19 +62,31 @@ class StudentController extends Controller
 
     /**
      * Store a newly created student.
-     * Note: Students are created in a pending state and must be verified by an admin.
+     * Note: Students created by admin are auto-verified and don't need email verification.
      */
     public function store(StoreStudentRequest $request)
     {
         $validated = $request->validated();
         $validated['role'] = 'student';
-        $validated['is_admin_verified'] = false; // Students are unverified by default
+        $validated['password'] = Hash::make('password'); // Default hashed password
+        // Generate default email if not provided
+        if (empty($validated['email'])) {
+            $validated['email'] = $validated['student_id'] . '@email.com';
+        }
+        // Convert course code to course_id
+        if (!empty($validated['course'])) {
+            $course = Course::where('code', $validated['course'])->first();
+            $validated['course_id'] = $course ? $course->id : null;
+        }
+        unset($validated['course']); // Remove course code field
+        $validated['is_admin_verified'] = true; // Admin-added students are auto-verified
+        $validated['email_verified_at'] = now(); // Mark email as verified
 
         $student = User::create($validated);
 
         return response()->json([
             'success' => true,
-            'message' => 'Student created successfully. Awaiting admin verification.',
+            'message' => 'Student created successfully.',
             'data' => $student,
         ], 201);
     }
@@ -109,6 +125,17 @@ class StudentController extends Controller
 
         $validated = $request->validated();
 
+        // Convert course code to course_id if provided
+        if (isset($validated['course'])) {
+            if (!empty($validated['course'])) {
+                $course = Course::where('code', $validated['course'])->first();
+                $validated['course_id'] = $course ? $course->id : null;
+            } else {
+                $validated['course_id'] = null;
+            }
+            unset($validated['course']); // Remove course code field
+        }
+
         $student->update($validated);
 
         return response()->json([
@@ -141,60 +168,38 @@ class StudentController extends Controller
 
     /**
      * Get student statistics for dashboard.
+     * Dynamically fetches courses from the database instead of hardcoded values.
      */
     public function statistics(Request $request)
     {
-        // Define course groups
-        $courseGroups = [
-            'bec' => [
-                ['id' => null, 'code' => 'ELEM', 'label' => 'Elementary'],
-                ['id' => null, 'code' => 'JHS', 'label' => 'Junior High'],
-                ['id' => null, 'code' => 'SHS-ABM', 'label' => 'SHS-ABM'],
-                ['id' => null, 'code' => 'SHS-STEM', 'label' => 'SHS-STEM'],
-                ['id' => null, 'code' => 'SHS-HUMSS', 'label' => 'SHS-HUMSS'],
-                ['id' => null, 'code' => 'SHS-HE', 'label' => 'SHS-HE'],
-                ['id' => null, 'code' => 'SHS-ICT', 'label' => 'SHS-ICT'],
-            ],
-            'college' => [
-                ['id' => null, 'code' => 'BSGE', 'label' => 'BSGE'],
-                ['id' => null, 'code' => 'BSA', 'label' => 'BSA'],
-                ['id' => null, 'code' => 'BEEd', 'label' => 'BEEd'],
-                ['id' => null, 'code' => 'BSEd', 'label' => 'BSEd'],
-                ['id' => null, 'code' => 'BSEd-Math', 'label' => 'BSEd-Math'],
-                ['id' => null, 'code' => 'BSEd-English', 'label' => 'BSEd-Eng'],
-                ['id' => null, 'code' => 'BSEd-Filipino', 'label' => 'BSEd-Fil'],
-                ['id' => null, 'code' => 'BSEd-Science', 'label' => 'BSEd-Sci'],
-                ['id' => null, 'code' => 'BSCrim', 'label' => 'BSCrim'],
-                ['id' => null, 'code' => 'BSN', 'label' => 'BSN'],
-                ['id' => null, 'code' => 'AB-PolSci', 'label' => 'AB-PolSci'],
-                ['id' => null, 'code' => 'AB-English', 'label' => 'AB-Eng'],
-                ['id' => null, 'code' => 'ABCom', 'label' => 'ABCom'],
-                ['id' => null, 'code' => 'BSBA', 'label' => 'BSBA'],
-                ['id' => null, 'code' => 'BSBA-FM', 'label' => 'BSBA-FM'],
-                ['id' => null, 'code' => 'BSBA-MM', 'label' => 'BSBA-MM'],
-                ['id' => null, 'code' => 'BSBA-HRM', 'label' => 'BSBA-HRM'],
-                ['id' => null, 'code' => 'BSMA', 'label' => 'BSMA'],
-                ['id' => null, 'code' => 'BSIT', 'label' => 'BSIT'],
-                ['id' => null, 'code' => 'BSHM', 'label' => 'BSHM'],
-            ],
-            'graduate' => [
-                ['id' => null, 'code' => 'PhD', 'label' => 'Ph.D'],
-                ['id' => null, 'code' => 'EdD', 'label' => 'Ed.D'],
-                ['id' => null, 'code' => 'MA.Ed', 'label' => 'MA.Ed'],
-                ['id' => null, 'code' => 'MA.Ed-LL', 'label' => 'MA.Ed-LL'],
-                ['id' => null, 'code' => 'MPA', 'label' => 'MPA'],
-                ['id' => null, 'code' => 'MBA', 'label' => 'MBA'],
-            ],
-        ];
-
-        // Get course IDs mapped by code
-        $courseCodes = array_merge(
-            array_column($courseGroups['bec'], 'code'),
-            array_column($courseGroups['college'], 'code'),
-            array_column($courseGroups['graduate'], 'code')
-        );
+        // Get all courses from database, grouped by department
+        $allCourses = \App\Models\Course::all(['id', 'code', 'name', 'department']);
         
-        $courseIds = \App\Models\Course::whereIn('code', $courseCodes)
+        // Group courses by department
+        $coursesByDept = $allCourses->groupBy('department')->toArray();
+        
+        // Transform to the format needed for statistics
+        $courseGroups = [];
+        foreach ($coursesByDept as $dept => $courses) {
+            // Map course data
+            $courseList = array_map(function($course) {
+                return [
+                    'code' => $course['code'],
+                    'label' => $course['code'], // Use code as label (or name if preferred)
+                    'name' => $course['name'],
+                ];
+            }, $courses);
+            
+            // Use department as key (sanitized)
+            $deptKey = strtolower(str_replace(' ', '_', $dept));
+            $courseGroups[$deptKey] = $courseList;
+        }
+        
+        // Get all course codes needed for the query
+        $allCourseCodes = $allCourses->pluck('code')->toArray();
+        
+        // Get course IDs mapped by code
+        $courseIds = \App\Models\Course::whereIn('code', $allCourseCodes)
             ->pluck('id', 'code')
             ->toArray();
         
@@ -205,8 +210,7 @@ class StudentController extends Controller
             ->groupBy('course_id')
             ->selectRaw('course_id, COUNT(*) as count')
             ->get()
-            ->keyBy('course_id')
-            ->pluck('count')
+            ->pluck('count', 'course_id')
             ->toArray();
         
         // Process each group
@@ -214,28 +218,35 @@ class StudentController extends Controller
             return array_map(
                 function($course) use ($courseCounts, $courseIds) {
                     $courseId = $courseIds[$course['code']] ?? null;
-                    return ['name' => $course['label'], 'count' => $courseCounts[$courseId] ?? 0];
+                    return [
+                        'code' => $course['code'],
+                        'name' => $course['label'],
+                        'count' => $courseCounts[$courseId] ?? 0
+                    ];
                 },
                 $group
             );
         };
         
-        $becData = $processCourseGroup($courseGroups['bec']);
-        $collegeData = $processCourseGroup($courseGroups['college']);
-        $graduateData = $processCourseGroup($courseGroups['graduate']);
+        // Process all departments
+        $processedGroups = [];
+        $totalByDept = [];
+        foreach ($courseGroups as $deptKey => $group) {
+            $processedGroups[$deptKey] = $processCourseGroup($group);
+            $totalByDept[$deptKey] = array_sum(array_column($processedGroups[$deptKey], 'count'));
+        }
+        
+        // Get total verified student count
+        $totalStudents = User::where('role', 'student')
+            ->where('is_admin_verified', true)
+            ->count();
 
         return response()->json([
             'success' => true,
             'data' => [
-                'total' => User::where('role', 'student')
-                    ->where('is_admin_verified', true)
-                    ->count(),
-                'bec' => array_sum(array_column($becData, 'count')),
-                'college' => array_sum(array_column($collegeData, 'count')),
-                'graduate' => array_sum(array_column($graduateData, 'count')),
-                'becCourses' => $becData,
-                'collegeCourses' => $collegeData,
-                'graduateCourses' => $graduateData,
+                'total' => $totalStudents,
+                'departments' => $processedGroups,
+                'departmentTotals' => $totalByDept,
             ],
         ]);
     }
@@ -303,5 +314,78 @@ class StudentController extends Controller
             'type' => $slug,
             'type_label' => $actualTypeName,
         ]);
+    }
+
+    /**
+     * Get all students with their submitted records across all types.
+     * Optimized for the records checklist view.
+     */
+    public function recordsChecklist()
+    {
+        try {
+            // Get all verified students with their courses
+            $students = User::verifiedStudents()
+                ->with('course:id,name')
+                ->select('id', 'student_id', 'firstname', 'middlename', 'lastname', 'email', 'course_id')
+                ->orderBy('firstname', 'asc')
+                ->orderBy('lastname', 'asc')
+                ->get();
+
+            // Get all record types
+            $recordTypes = RecordType::select('id', 'name')->orderBy('name')->get();
+
+            // Get all verified student records grouped by user and type
+            $allRecords = \App\Models\StudentRecord::where('verification_status', 'verified')
+                ->select('id', 'user_id', 'record_type', 'created_at')
+                ->get();
+
+            // Build checklist data
+            $studentChecklists = $students->map(function ($student) use ($recordTypes, $allRecords) {
+                $recordsMap = [];
+                
+                foreach ($recordTypes as $type) {
+                    // Filter records for this student and type
+                    $typeRecords = $allRecords->filter(function ($record) use ($student, $type) {
+                        return $record->user_id === $student->id && $record->record_type === $type->name;
+                    });
+                    
+                    $recordsMap[$type->name] = [
+                        'count' => $typeRecords->count(),
+                        'submitted' => $typeRecords->count() > 0,
+                    ];
+                }
+
+                return [
+                    'id' => $student->id,
+                    'student_id' => $student->student_id,
+                    'name' => trim($student->firstname . ' ' . ($student->middlename ? $student->middlename . ' ' : '') . $student->lastname),
+                    'email' => $student->email,
+                    'course' => $student->course ? $student->course->name : null,
+                    'records' => $recordsMap,
+                ];
+            });
+
+            // Get record types for frontend
+            $types = $recordTypes->map(function ($type) {
+                return [
+                    'id' => $type->id,
+                    'name' => $type->name,
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'students' => $studentChecklists,
+                    'record_types' => $types,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Records checklist error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load records checklist: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }

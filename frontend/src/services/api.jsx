@@ -56,6 +56,27 @@ async function initializeSession() {
   }
 }
 
+// Refresh CSRF token (call this after login to get a fresh token for the new session)
+async function refreshCsrfToken() {
+  try {
+    console.log("Refreshing CSRF token...");
+    const response = await axios.get(`${API_URL}/csrf-token`, {
+      withCredentials: true,
+    });
+
+    csrfToken =
+      response.headers["x-csrf-token"] ||
+      response.data?.token ||
+      getCsrfTokenFromCookie();
+
+    console.log("CSRF token refreshed:", csrfToken ? "✓" : "✗");
+    return csrfToken;
+  } catch (e) {
+    console.warn("CSRF token refresh failed:", e.message);
+    return null;
+  }
+}
+
 // Request interceptor to include CSRF token and set Content-Type
 api.interceptors.request.use(
   async (config) => {
@@ -123,3 +144,4 @@ api.interceptors.response.use(
 );
 
 export default api;
+export { refreshCsrfToken };

@@ -2,8 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\Student;
+use App\Models\User;
+use App\Models\Course;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class StudentSeeder extends Seeder
 {
@@ -150,8 +152,32 @@ class StudentSeeder extends Seeder
         // Shuffle to randomize order
         shuffle($students);
 
+        // Get course ID mapping from course codes
+        $courseCodeToId = Course::all()->keyBy('code')->map->id->toArray();
+
         foreach ($students as $student) {
-            Student::create($student);
+            // Get the course_id from the course code
+            $courseCode = $student['course'];
+            $courseId = $courseCodeToId[$courseCode] ?? null;
+
+            // Create User record instead of Student record
+            User::create([
+                'student_id' => $student['student_id'],
+                'firstname' => $student['firstname'],
+                'middlename' => $student['middlename'],
+                'lastname' => $student['lastname'],
+                'email' => $student['email'],
+                'password' => Hash::make('password'), // Default password: "password"
+                'age' => $student['age'],
+                'birthdate' => $student['birthdate'],
+                'address' => $student['address'],
+                'contact_number' => $student['contact_number'],
+                'gender' => $student['gender'],
+                'course_id' => $courseId,
+                'role' => 'student',
+                'is_admin_verified' => true, // Auto-verify seeded students
+                'email_verified_at' => now(),
+            ]);
         }
 
         $this->command->info('Created ' . count($students) . ' students across all courses.');

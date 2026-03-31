@@ -47,10 +47,6 @@ export const initialStudentForm = {
   contact_number: "",
   email: "",
   course: "",
-  year_level: "",
-  section: "",
-  guardian_name: "",
-  guardian_contact: "",
 };
 
 // Initial user form data

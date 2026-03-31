@@ -7,8 +7,10 @@ use App\Models\RecordType;
 use App\Http\Requests\StoreStudentRecordRequest;
 use App\Http\Requests\UpdateStudentRecordRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class StudentRecordController extends Controller
 {
@@ -294,7 +296,7 @@ class StudentRecordController extends Controller
         if ($filesForLogging && !is_array($filesForLogging)) {
             $filesForLogging = [$filesForLogging];
         }
-        \Log::info('studentStoreByType request:', [
+        Log::info('studentStoreByType request:', [
             'has_files' => $request->hasFile('files'),
             'files_count' => count($filesForLogging ?? []),
             'all_keys' => array_keys($request->all()),
@@ -379,7 +381,7 @@ class StudentRecordController extends Controller
         }
 
         // Get authenticated user (student)
-        $user = auth()->user();
+        $user = Auth::user();
         if (!$user || $user->role !== 'student') {
             return response()->json([
                 'success' => false,
@@ -462,7 +464,7 @@ class StudentRecordController extends Controller
      */
     public function studentRecords(Request $request)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         if (!$user || $user->role !== 'student') {
             return response()->json([
                 'success' => false,
@@ -486,7 +488,7 @@ class StudentRecordController extends Controller
      */
     public function getPendingVerification(Request $request)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         if (!$user || $user->role !== 'admin') {
             return response()->json([
                 'success' => false,
@@ -540,7 +542,7 @@ class StudentRecordController extends Controller
      */
     public function verifyRecord(Request $request, StudentRecord $record)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         if (!$user || $user->role !== 'admin') {
             return response()->json([
                 'success' => false,

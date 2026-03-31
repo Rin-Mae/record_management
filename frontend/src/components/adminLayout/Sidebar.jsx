@@ -215,12 +215,12 @@ function CollapsibleWithLink({ item, pathname, navigate, level }) {
 // Sidebar Header Component with Logo and User Info
 function SidebarHeader({ user }) {
   return (
-    <div className="d-flex flex-column align-items-center gap-3 py-3">
+    <div className="d-flex flex-column align-items-center gap-1 py-3">
       {/* Logo */}
       <img
         src="/NC Logo.png"
         alt="NC Logo"
-        style={{ maxWidth: "120px", height: "auto" }}
+        style={{ maxWidth: "110px", height: "auto" }}
       />
       {/* User Name */}
       <div className="d-flex flex-column align-items-center">
