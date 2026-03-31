@@ -29,7 +29,7 @@ class StoreUserRequest extends FormRequest
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/'],
             'password_confirmation' => ['required', 'string'],
-            'role' => ['required', 'in:admin,staff'],
+            'role' => ['required', 'in:admin'],
         ];
     }
 
@@ -47,7 +47,7 @@ class StoreUserRequest extends FormRequest
             'password.min' => 'Password must be at least 8 characters.',
             'password.regex' => 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&).',
             'password.confirmed' => 'Password confirmation does not match.',
-            'role.in' => 'Role must be either admin or staff.',
+            'role.in' => 'Role must be admin.',
         ];
     }
 }

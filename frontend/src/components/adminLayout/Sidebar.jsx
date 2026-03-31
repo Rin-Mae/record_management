@@ -1,29 +1,10 @@
 import { useState, useCallback, memo } from "react";
-import {
-  FiX,
-  FiLogOut,
-  FiHome,
-  FiUsers,
-  FiChevronDown,
-  FiChevronRight,
-  FiFolder,
-  FiBook,
-  FiActivity,
-} from "react-icons/fi";
+import { FiX, FiLogOut, FiChevronDown, FiChevronRight } from "react-icons/fi";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { toast } from "react-toastify";
-import { useSidebar, NAV_ITEMS, isPathActive } from "./sidebarUtils.jsx";
+import { useSidebar, NAV_ITEMS, isPathActive, ICONS } from "./sidebarUtils.jsx";
 import "./Sidebar.css";
-
-// Icon mapping - only icons actually used
-const ICONS = {
-  FiHome,
-  FiUsers,
-  FiFolder,
-  FiBook,
-  FiActivity,
-};
 
 // Collapsible Menu Item Component
 const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
@@ -34,31 +15,14 @@ const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
   navigate,
   level = 0,
 }) {
-  const [expanded, setExpanded] = useState(() => {
-    // Auto-expand if any child is active
-    const checkActive = (items) => {
-      return items.some((item) => {
-        if (item.match && isPathActive(pathname, item.match)) return true;
-        if (item.subItems) return checkActive(item.subItems);
-        return false;
-      });
-    };
-    return checkActive(items);
-  });
-
-  const hasActiveChild = items.some((item) => {
+  const checkItemActive = (item) => {
     if (item.match && isPathActive(pathname, item.match)) return true;
-    if (item.subItems) {
-      const checkNested = (subItems) =>
-        subItems.some((sub) => {
-          if (sub.match && isPathActive(pathname, sub.match)) return true;
-          if (sub.subItems) return checkNested(sub.subItems);
-          return false;
-        });
-      return checkNested(item.subItems);
-    }
+    if (item.subItems) return item.subItems.some(checkItemActive);
     return false;
-  });
+  };
+
+  const [expanded, setExpanded] = useState(() => items.some(checkItemActive));
+  const hasActiveChild = items.some(checkItemActive);
 
   return (
     <li className="nav-item">
@@ -80,7 +44,6 @@ const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
         <ul className="nav flex-column ms-2 mt-1 gap-1">
           {items.map((item, idx) => {
             if (item.subItems && !item.path) {
-              // This is a category header with sub-items (like Academic Track)
               return (
                 <NestedCollapsible
                   key={idx}
@@ -91,8 +54,8 @@ const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
                   level={level + 1}
                 />
               );
-            } else if (item.subItems && item.path) {
-              // This has both a path and sub-items
+            }
+            if (item.subItems && item.path) {
               return (
                 <CollapsibleWithLink
                   key={item.path}
@@ -102,27 +65,25 @@ const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
                   level={level + 1}
                 />
               );
-            } else {
-              // Regular menu item
-              const active = item.match && isPathActive(pathname, item.match);
-              return (
-                <li key={item.path} className="nav-item">
-                  <button
-                    type="button"
-                    className={`btn btn-sm w-100 text-start d-flex align-items-center gap-2 ${
-                      active ? "btn-success" : "btn-outline-light border-0"
-                    }`}
-                    onClick={() => navigate(item.path)}
-                    style={{
-                      paddingLeft: `${12 + (level + 1) * 12}px`,
-                      fontSize: "0.875rem",
-                    }}
-                  >
-                    {item.label}
-                  </button>
-                </li>
-              );
             }
+            const active = item.match && isPathActive(pathname, item.match);
+            return (
+              <li key={item.path} className="nav-item">
+                <button
+                  type="button"
+                  className={`btn btn-sm w-100 text-start d-flex align-items-center gap-2 ${
+                    active ? "btn-success" : "btn-outline-light border-0"
+                  }`}
+                  onClick={() => navigate(item.path)}
+                  style={{
+                    paddingLeft: `${12 + (level + 1) * 12}px`,
+                    fontSize: "0.875rem",
+                  }}
+                >
+                  {item.label}
+                </button>
+              </li>
+            );
           })}
         </ul>
       )}
@@ -251,7 +212,33 @@ function CollapsibleWithLink({ item, pathname, navigate, level }) {
   );
 }
 
-// UserAvatar component
+// Sidebar Header Component with Logo and User Info
+function SidebarHeader({ user }) {
+  return (
+    <div className="d-flex flex-column align-items-center gap-3 py-3">
+      {/* Logo */}
+      <img
+        src="/NC Logo.png"
+        alt="NC Logo"
+        style={{ maxWidth: "120px", height: "auto" }}
+      />
+      {/* User Name */}
+      <div className="d-flex flex-column align-items-center">
+        <span
+          className="text-white fw-semibold text-center"
+          style={{ fontSize: "1.1rem" }}
+        >
+          {user?.firstname || "Admin"} {user?.lastname || ""}
+        </span>
+        <span className="text-white-50 small text-capitalize">
+          {user?.role || "Administrator"}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// UserAvatar component (kept for backward compatibility if needed)
 function UserAvatar({ user }) {
   return (
     <div className="d-flex align-items-center gap-2">
@@ -270,32 +257,25 @@ function UserAvatar({ user }) {
 export default function Sidebar({ visible, onClose, user, onLogout }) {
   const [open, setOpen] = useSidebar(visible);
   const navigate = useNavigate();
-  const location = useLocation();
+  const { pathname } = useLocation();
   const { logout } = useAuth();
   const [loggingOut, setLoggingOut] = useState(false);
-  const pathname = location?.pathname || "";
 
   const handleClose = useCallback(() => {
     setOpen(false);
-    if (typeof onClose === "function") onClose();
+    onClose?.();
   }, [setOpen, onClose]);
 
   const handleLogout = useCallback(async () => {
     if (loggingOut) return;
     setLoggingOut(true);
     try {
-      let res;
-      if (typeof onLogout === "function") {
-        res = await onLogout();
-      } else if (typeof logout === "function") {
-        res = await logout();
-      }
-      const msg = res?.message ?? "Logged out";
-      toast.success(msg);
+      const res = await (onLogout?.() ?? logout?.());
+      toast.success(res?.message ?? "Logged out");
       navigate("/", { replace: true });
-    } catch (e) {
-      console.error(e);
-      toast.error(e?.message || "Failed to logout");
+    } catch (error) {
+      console.error(error);
+      toast.error(error?.message || "Failed to logout");
     } finally {
       setLoggingOut(false);
     }
@@ -305,12 +285,14 @@ export default function Sidebar({ visible, onClose, user, onLogout }) {
     <div
       className={`admin-sidebar bg-dark text-white d-flex flex-column ${open ? "open" : ""}`}
     >
-      {/* Header */}
-      <div className="d-flex align-items-center justify-content-between px-3 py-3 border-bottom border-secondary">
-        <UserAvatar user={user} />
+      <div className="position-relative px-3 border-bottom border-secondary">
+        <div className="d-flex align-items-center justify-content-center">
+          <SidebarHeader user={user} />
+        </div>
         <button
           type="button"
-          className="btn btn-outline-light btn-sm d-lg-none"
+          className="btn btn-outline-light btn-sm d-lg-none position-absolute"
+          style={{ top: "1rem", right: "1rem" }}
           aria-label="Close sidebar"
           onClick={handleClose}
         >
@@ -318,7 +300,6 @@ export default function Sidebar({ visible, onClose, user, onLogout }) {
         </button>
       </div>
 
-      {/* Navigation */}
       <nav
         className="flex-grow-1 p-3 overflow-auto"
         aria-label="Admin navigation"
@@ -327,6 +308,10 @@ export default function Sidebar({ visible, onClose, user, onLogout }) {
           {NAV_ITEMS.map((item) => {
             const Icon = ICONS[item.iconName];
             const active = isPathActive(pathname, item.match);
+            if (!Icon) {
+              console.warn(`Icon not found for: ${item.iconName}`);
+              return null;
+            }
             return (
               <li key={item.path} className="nav-item">
                 <button
@@ -346,7 +331,6 @@ export default function Sidebar({ visible, onClose, user, onLogout }) {
         </ul>
       </nav>
 
-      {/* Footer - Logout */}
       <div className="p-3 border-top border-secondary mt-auto">
         <button
           type="button"
@@ -354,15 +338,7 @@ export default function Sidebar({ visible, onClose, user, onLogout }) {
           onClick={handleLogout}
           disabled={loggingOut}
         >
-          {loggingOut ? (
-            <span
-              className="spinner-border spinner-border-sm"
-              role="status"
-              aria-hidden="true"
-            />
-          ) : (
-            <FiLogOut size={18} />
-          )}
+          <FiLogOut size={18} />
           {loggingOut ? "Signing out..." : "Logout"}
         </button>
       </div>

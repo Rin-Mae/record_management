@@ -31,8 +31,8 @@ class UpdateUserRequest extends FormRequest
             'username' => ['sometimes', 'required', 'string', 'max:255', 'regex:/^[a-zA-Z0-9_\-\.]+$/', Rule::unique('users', 'username')->ignore($userId)],
             'email' => ['sometimes', 'required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($userId)],
             'password' => ['nullable', 'string', 'min:8', 'confirmed', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/'],
-            'password_confirmation' => ['nullable_if:password,null', 'string'],
-            'role' => ['sometimes', 'required', 'in:admin,staff'],
+            'password_confirmation' => ['nullable', 'string'],
+            'role' => ['sometimes', 'required', 'in:admin'],
         ];
     }
 

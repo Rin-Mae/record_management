@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Student;
 use App\Models\StudentRecord;
 use App\Models\RecordFile;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class StudentRecordSeeder extends Seeder
@@ -16,10 +17,10 @@ class StudentRecordSeeder extends Seeder
     {
         $recordTypes = ['tor', 'special-order', 'psa', 'comprehensive-exam', 'diploma'];
         
-        // Get the first 50 students to create records for
-        $students = Student::limit(50)->get();
+        // Get verified students (users with is_admin_verified = 1)
+        $verifiedUsers = User::where('is_admin_verified', true)->limit(50)->get();
 
-        foreach ($students as $student) {
+        foreach ($verifiedUsers as $user) {
             // Create 1-3 random records for each student
             $recordCount = rand(1, 3);
             
@@ -27,7 +28,7 @@ class StudentRecordSeeder extends Seeder
                 $recordType = $recordTypes[array_rand($recordTypes)];
                 
                 $record = StudentRecord::create([
-                    'student_id' => $student->id,
+                    'user_id' => $user->id,
                     'record_type' => $recordType,
                     'title' => $this->generateTitle($recordType),
                     'description' => $this->generateDescription($recordType),
@@ -44,7 +45,7 @@ class StudentRecordSeeder extends Seeder
                 for ($j = 0; $j < $fileCount; $j++) {
                     RecordFile::create([
                         'student_record_id' => $record->id,
-                        'file_path' => "student_records/{$student->id}/sample_file_${i}_${j}.pdf",
+                        'file_path' => "student_records/{$user->id}/sample_file_${i}_${j}.pdf",
                         'file_name' => "Document_" . ($j + 1) . ".pdf",
                         'file_type' => 'application/pdf',
                         'file_size' => rand(100000, 5000000),
@@ -53,7 +54,7 @@ class StudentRecordSeeder extends Seeder
             }
         }
 
-        $this->command->info('StudentRecord seeder completed. Created records for ' . count($students) . ' students.');
+        $this->command->info('StudentRecord seeder completed. Created records for ' . count($verifiedUsers) . ' students.');
     }
 
     private function generateTitle($recordType): string

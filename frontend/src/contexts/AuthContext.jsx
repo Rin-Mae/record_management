@@ -31,6 +31,11 @@ export const AuthProvider = ({ children }) => {
         if (typeof window !== "undefined") window.__appUser = normalized;
       } catch (e) {}
     } catch (err) {
+      // User not authenticated - this is ok, they may be on a public page
+      // Only log non-401 errors
+      if (err?.response?.status !== 401) {
+        console.error("Auth check error:", err?.response?.status);
+      }
       setUser(null);
       try {
         if (typeof window !== "undefined") window.__appUser = null;

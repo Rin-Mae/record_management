@@ -7,6 +7,7 @@ use App\Models\StudentRecord;
 use App\Models\RecordFile;
 use App\Models\Course;
 
+use App\Observers\UserObserver;
 use App\Observers\StudentObserver;
 use App\Observers\StudentRecordObserver;
 use App\Observers\RecordFileObserver;
@@ -29,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        User::observe(UserObserver::class);
         Student::observe(StudentObserver::class);
         StudentRecord::observe(StudentRecordObserver::class);
         RecordFile::observe(RecordFileObserver::class);

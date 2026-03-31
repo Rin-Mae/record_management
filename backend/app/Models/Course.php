@@ -18,11 +18,11 @@ class Course extends Model
     ];
 
     /**
-     * Get the students that have this course.
+     * Get the students (users) that have this course.
      */
     public function students()
     {
-        return $this->hasMany(Student::class);
+        return $this->hasMany(User::class, 'course_id');
     }
 
     /**

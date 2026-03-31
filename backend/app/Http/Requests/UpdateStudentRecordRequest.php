@@ -11,7 +11,7 @@ class UpdateStudentRecordRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user() && ($this->user()->role === 'admin' || $this->user()->role === 'staff');
+        return $this->user() && $this->user()->role === 'admin';
     }
 
     /**
@@ -22,7 +22,7 @@ class UpdateStudentRecordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'student_id' => ['sometimes', 'required', 'integer', 'exists:students,id'],
+            'student_id' => ['sometimes', 'required', 'integer', 'exists:users,id'],
             'files' => ['nullable', 'array', 'max:5'],
             'files.*' => [
                 'nullable',

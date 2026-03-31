@@ -1,4 +1,28 @@
 import { useState, useEffect, useCallback } from "react";
+import {
+  FiHome,
+  FiUsers,
+  FiChevronDown,
+  FiChevronRight,
+  FiFolder,
+  FiBook,
+  FiActivity,
+  FiCheckCircle,
+  FiClock,
+} from "react-icons/fi";
+
+// Icon mapping
+export const ICONS = {
+  FiHome,
+  FiUsers,
+  FiChevronDown,
+  FiChevronRight,
+  FiFolder,
+  FiBook,
+  FiActivity,
+  FiCheckCircle,
+  FiClock,
+};
 
 // Navigation items for the sidebar
 export const NAV_ITEMS = [
@@ -21,16 +45,34 @@ export const NAV_ITEMS = [
     match: /^\/admin\/students$/,
   },
   {
+    path: "/admin/student-verification",
+    label: "Student Verification",
+    iconName: "FiCheckCircle",
+    match: /^\/admin\/student-verification$/,
+  },
+  {
     path: "/admin/courses",
     label: "Courses",
     iconName: "FiBook",
     match: /^\/admin\/courses$/,
   },
   {
+    path: "/admin/record-types",
+    label: "Record Types",
+    iconName: "FiFolder",
+    match: /^\/admin\/record-types$/,
+  },
+  {
     path: "/admin/records",
     label: "Records",
     iconName: "FiFolder",
     match: /^\/admin\/records$/,
+  },
+  {
+    path: "/admin/pending-verification",
+    label: "Record Verification",
+    iconName: "FiClock",
+    match: /^\/admin\/pending-verification$/,
   },
   {
     path: "/admin/activity-logs",

@@ -311,8 +311,18 @@ export default function Courses() {
                       <option value="Basic Education Center">
                         Basic Education Center
                       </option>
-                      <option value="College">College</option>
-                      <option value="Graduate">Graduate</option>
+                      <option value="Graduate Program">Graduate Program</option>
+                      {departments
+                        .filter(
+                          (dept) =>
+                            dept !== "Basic Education Center" &&
+                            dept !== "Graduate Program",
+                        )
+                        .map((dept) => (
+                          <option key={dept} value={dept}>
+                            {dept}
+                          </option>
+                        ))}
                     </select>
                   </div>
                 </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../../contexts/AuthContext";
@@ -19,23 +19,12 @@ import {
   FiFile,
   FiImage,
   FiEye,
+  FiChevronDown,
+  FiChevronRight,
 } from "react-icons/fi";
 import Sidebar from "../adminLayout/Sidebar";
 import { formatDate } from "../../utils/index.jsx";
 import { validateSpecialCharacters } from "../../utils/validation.js";
-
-// Record type config mapping URL slug to labels
-const RECORD_TYPE_CONFIG = {
-  tor: { label: "Transcript of Records (TOR)", short: "TOR" },
-  "special-order": { label: "Special Order", short: "Special Order" },
-  psa: { label: "PSA", short: "PSA" },
-  "comprehensive-exam": {
-    label: "Comprehensive Exam",
-    short: "Comprehensive Exam",
-  },
-  diploma: { label: "Diploma", short: "Diploma" },
-  // Enrollment list removed
-};
 
 // Format file size for display
 function formatFileSize(bytes) {
@@ -85,9 +74,15 @@ export default function RecordManagement() {
   const { user, logout } = useAuth();
   const [sidebarVisible, setSidebarVisible] = useState(true);
 
+  // Record types fetched from database - stores array of type objects
+  const [recordTypes, setRecordTypes] = useState([]);
+  const [loadingTypes, setLoadingTypes] = useState(true);
+
   const isUnifiedView = !recordType; // No recordType param means unified view
   const typeConfig = recordType
-    ? RECORD_TYPE_CONFIG[recordType]
+    ? recordTypes.find((t) => t.code === recordType)
+      ? { label: recordType, short: recordType }
+      : { label: "Unknown", short: "Unknown" }
     : { label: "All Records", short: "Record" };
 
   // Records data
@@ -116,7 +111,7 @@ export default function RecordManagement() {
   const [formErrors, setFormErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [editingRecordId, setEditingRecordId] = useState(null);
-  const [modalRecordType, setModalRecordType] = useState(recordType || "tor"); // Default to TOR
+  const [modalRecordType, setModalRecordType] = useState(recordType || "");
 
   // Multi-file state
   const [newFiles, setNewFiles] = useState([]);
@@ -131,6 +126,35 @@ export default function RecordManagement() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
+
+  // Expanded students
+  const [expandedStudents, setExpandedStudents] = useState({});
+
+  // Fetch record types on mount
+  useEffect(() => {
+    const fetchRecordTypes = async () => {
+      try {
+        const response = await StudentRecordServices.getRecordTypes();
+        if (response.success && response.data) {
+          // Handle both array and object formats
+          let typesArray = Array.isArray(response.data)
+            ? response.data
+            : Object.entries(response.data).map(([code, name]) => ({
+                code,
+                name,
+              }));
+          setRecordTypes(typesArray);
+        }
+      } catch (error) {
+        console.error("Failed to fetch record types:", error);
+        toast.error("Failed to load record types");
+      } finally {
+        setLoadingTypes(false);
+      }
+    };
+
+    fetchRecordTypes();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -155,23 +179,45 @@ export default function RecordManagement() {
         let totalRecords = 0;
 
         if (isUnifiedView) {
-          // In unified view, fetch all record types
-          const recordTypes = Object.keys(RECORD_TYPE_CONFIG);
-          const resultsPerType = 100; // Fetch more records to filter client-side
+          // In unified view, fetch all verified students with all their records
+          // Get all students from all record types
+          const seenRecords = new Set(); // Deduplicate by (studentId, recordType)
 
-          const promises = recordTypes.map((type) =>
-            StudentRecordServices.getRecordsByType(type, {
-              page: 1,
-              per_page: resultsPerType,
-            }).catch(() => ({ success: false, data: { data: [] } })),
+          const typeCodes = recordTypes.map((type) => type.code);
+          const promises = typeCodes.map((type) =>
+            StudentRecordServices.getVerifiedStudentsWithRecords(type).catch(
+              (err) => {
+                console.warn(
+                  `Failed to fetch verified students for ${type}:`,
+                  err,
+                );
+                return { success: false, data: [] };
+              },
+            ),
           );
 
           const responses = await Promise.all(promises);
-          responses.forEach((res) => {
-            if (res.success && res.data.data) {
-              allRecords = [...allRecords, ...res.data.data];
+          responses.forEach((res, index) => {
+            if (res.success && Array.isArray(res.data)) {
+              const type = typeCodes[index]; // Get the type code for this batch of records
+              res.data.forEach((item) => {
+                const studentId = item.student?.id;
+                const recordKey = `${studentId}-${type}`; // Use type code for key
+
+                // Add record only if we haven't seen this (studentId, recordType) combination
+                if (studentId && !seenRecords.has(recordKey)) {
+                  seenRecords.add(recordKey);
+                  // Force record_type to be the code for filtering to work correctly
+                  item.record_type = type;
+                  allRecords.push(item);
+                }
+              });
             }
           });
+
+          console.log(
+            `Fetched ${allRecords.length} total records from ${typeCodes.length} types`,
+          );
 
           // Apply filters
           if (recordTypeFilter) {
@@ -183,7 +229,6 @@ export default function RecordManagement() {
             const search = studentSearch.toLowerCase();
             allRecords = allRecords.filter(
               (r) =>
-                r.student?.student_id?.toLowerCase().includes(search) ||
                 r.student?.firstname?.toLowerCase().includes(search) ||
                 r.student?.lastname?.toLowerCase().includes(search) ||
                 `${r.student?.firstname} ${r.student?.lastname}`
@@ -197,33 +242,53 @@ export default function RecordManagement() {
           const endIdx = startIdx + pagination.perPage;
           allRecords = allRecords.slice(startIdx, endIdx);
         } else {
-          // Type-specific view
-          const params = {
-            page,
-            per_page: pagination.perPage,
-          };
+          // Type-specific view - get all verified students including those without records
+          try {
+            const response =
+              await StudentRecordServices.getVerifiedStudentsWithRecords(
+                recordType,
+              );
 
-          if (studentSearch) {
-            // Search by student ID or name - send to backend
-            params.search = studentSearch;
-          }
+            if (response.success) {
+              allRecords = response.data;
 
-          const response = await StudentRecordServices.getRecordsByType(
-            recordType,
-            params,
-          );
-          if (response.success) {
-            allRecords = response.data.data;
-            totalRecords = response.data.total;
-            setPagination({
-              currentPage: response.data.current_page,
-              lastPage: response.data.last_page,
-              total: response.data.total,
-              perPage: response.data.per_page,
-            });
-            setRecords(allRecords);
-            setLoading(false);
-            return;
+              // Apply search filter on client side
+              if (studentSearch) {
+                const search = studentSearch.toLowerCase();
+                allRecords = allRecords.filter((item) => {
+                  const student = item.student;
+                  return (
+                    student?.student_id?.toLowerCase().includes(search) ||
+                    student?.firstname?.toLowerCase().includes(search) ||
+                    student?.lastname?.toLowerCase().includes(search) ||
+                    `${student?.firstname} ${student?.lastname}`
+                      .toLowerCase()
+                      .includes(search)
+                  );
+                });
+              }
+
+              totalRecords = allRecords.length;
+              const startIdx = (page - 1) * pagination.perPage;
+              const endIdx = startIdx + pagination.perPage;
+              const paginatedRecords = allRecords.slice(startIdx, endIdx);
+
+              setRecords(paginatedRecords);
+              const lastPage = Math.ceil(totalRecords / pagination.perPage);
+              setPagination({
+                currentPage: page,
+                lastPage,
+                total: totalRecords,
+                perPage: pagination.perPage,
+              });
+              setLoading(false);
+              return;
+            }
+          } catch (error) {
+            console.error(
+              "Failed to fetch verified students with records:",
+              error,
+            );
           }
         }
 
@@ -248,10 +313,19 @@ export default function RecordManagement() {
       recordTypeFilter,
       studentSearch,
       pagination.perPage,
+      recordTypes,
     ],
   );
 
+  // Fetch records, but wait for recordTypes to load first
   useEffect(() => {
+    // Only fetch if:
+    // 1. We're in unified view and recordTypes are loaded, OR
+    // 2. We're in a specific type view
+    if (isUnifiedView && loadingTypes) {
+      return; // Wait for types to load
+    }
+
     const debounceTimer = setTimeout(() => {
       fetchRecords(1);
     }, 500); // 500ms debounce delay
@@ -263,6 +337,7 @@ export default function RecordManagement() {
     recordTypeFilter,
     studentSearch,
     fetchRecords,
+    loadingTypes,
   ]);
 
   // Search students for the student selector in modal
@@ -298,7 +373,7 @@ export default function RecordManagement() {
     setSelectedStudent(null);
     setModalStudentSearch("");
     setStudentResults([]);
-    setModalRecordType(recordType || "tor"); // Set to current type or default to TOR
+    setModalRecordType(recordType || recordTypes[0] || ""); // Set to current type or default to first available
     setNewFiles([]);
     setExistingFiles([]);
     setRemoveFileIds([]);
@@ -313,7 +388,9 @@ export default function RecordManagement() {
     setSelectedStudent(record.student || null);
     setModalStudentSearch("");
     setStudentResults([]);
-    setModalRecordType(record.record_type || recordType || "tor"); // Set to record's type or current type
+    setModalRecordType(
+      record.record_type || recordType || recordTypes[0] || "",
+    ); // Set to record's type or current type
     setExistingFiles(record.files || []);
     setNewFiles([]);
     setRemoveFileIds([]);
@@ -407,10 +484,16 @@ export default function RecordManagement() {
     try {
       const data = {
         student_id: selectedStudent.id,
-        files: newFiles,
       };
 
+      // Only include files if there are new files to add
+      if (newFiles && newFiles.length > 0) {
+        data.files = newFiles;
+      }
+
       if (modalMode === "create") {
+        // For create, files are required
+        data.files = newFiles;
         const response = await StudentRecordServices.createRecordByType(
           modalRecordType,
           data,
@@ -421,7 +504,10 @@ export default function RecordManagement() {
           fetchRecords(pagination.currentPage);
         }
       } else {
-        data.remove_file_ids = removeFileIds;
+        // For edit, files are optional
+        if (removeFileIds && removeFileIds.length > 0) {
+          data.remove_file_ids = removeFileIds;
+        }
         const response = await StudentRecordServices.updateRecordByType(
           modalRecordType,
           editingRecordId,
@@ -490,6 +576,52 @@ export default function RecordManagement() {
     if (page >= 1 && page <= pagination.lastPage) {
       fetchRecords(page);
     }
+  };
+
+  // Group records by student, then by record type
+  const groupedRecords = useMemo(() => {
+    const grouped = {};
+
+    records.forEach((item) => {
+      // Handle both old format (record with id) and new format (item with student/record)
+      const isNewFormat = item.student && !item.id;
+      const student = isNewFormat ? item.student : item.student;
+      const record = isNewFormat ? item.record : item;
+
+      const studentKey =
+        student?.id ||
+        `${student?.firstname || "Unknown"}_${student?.lastname || ""}`;
+      const studentName = `${student?.firstname || "Unknown"} ${student?.lastname || ""}`;
+      const studentId = student?.student_id || "N/A";
+
+      if (!grouped[studentKey]) {
+        grouped[studentKey] = {
+          id: studentKey,
+          name: studentName,
+          student_id: studentId,
+          student: student,
+          recordsByType: {},
+        };
+      }
+
+      if (record) {
+        const recordType = record.record_type;
+        if (!grouped[studentKey].recordsByType[recordType]) {
+          grouped[studentKey].recordsByType[recordType] = [];
+        }
+
+        grouped[studentKey].recordsByType[recordType].push(record);
+      }
+    });
+
+    return Object.values(grouped);
+  }, [records]);
+
+  const toggleStudentExpanded = (studentId) => {
+    setExpandedStudents((prev) => ({
+      ...prev,
+      [studentId]: !prev[studentId],
+    }));
   };
 
   if (!typeConfig) {
@@ -594,15 +726,19 @@ export default function RecordManagement() {
                         className="form-select"
                         value={recordTypeFilter}
                         onChange={(e) => setRecordTypeFilter(e.target.value)}
+                        disabled={loadingTypes}
                       >
-                        <option value="">All Record Types</option>
-                        <option value="tor">Transcript of Records (TOR)</option>
-                        <option value="special-order">Special Order</option>
-                        <option value="psa">PSA</option>
-                        <option value="comprehensive-exam">
-                          Comprehensive Exam
+                        <option value="">
+                          {loadingTypes
+                            ? "Loading record types..."
+                            : "All Record Types"}
                         </option>
-                        <option value="diploma">Diploma</option>
+                        {Array.isArray(recordTypes) &&
+                          recordTypes.map((type) => (
+                            <option key={type.code} value={type.code}>
+                              {type.name}
+                            </option>
+                          ))}
                       </select>
                     </div>
                   </>
@@ -634,91 +770,199 @@ export default function RecordManagement() {
                   <p className="text-muted">
                     {studentSearch
                       ? "Try adjusting your search terms"
-                      : `No ${typeConfig.short.toLowerCase()} records have been added yet`}
+                      : "No verified records in the system yet"}
                   </p>
                 </div>
               ) : (
-                <div className="table-responsive">
-                  <table className="table table-hover align-middle mb-0">
-                    <thead className="table-info">
-                      <tr>
-                        <th>Student</th>
-                        <th>Record Type</th>
-                        <th>Files</th>
-                        <th>Created</th>
-                        <th style={{ width: "120px" }}>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {records.map((record) => (
-                        <tr key={record.id}>
-                          <td>
-                            <button
-                              className="btn btn-link p-0 text-decoration-none text-start"
-                              onClick={() => handleViewRecord(record)}
-                            >
-                              {record.student ? (
-                                <div>
-                                  <div className="fw-semibold">
-                                    {record.student.firstname}{" "}
-                                    {record.student.lastname}
-                                  </div>
-                                  <small className="text-muted">
-                                    {record.student.student_id} &mdash;{" "}
-                                    {record.student.course}
-                                  </small>
+                <div>
+                  {groupedRecords.map((student) => (
+                    <div key={student.id} className="student-group">
+                      {/* Student Header Row */}
+                      <div
+                        className="student-header"
+                        onClick={() => toggleStudentExpanded(student.id)}
+                        style={{
+                          borderBottom: "1px solid #dee2e6",
+                          padding: "1rem",
+                          backgroundColor: expandedStudents[student.id]
+                            ? "#cfe2ff"
+                            : "#fff",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.75rem",
+                        }}
+                      >
+                        {/* Expand/Collapse Icon */}
+                        <div style={{ minWidth: "24px" }}>
+                          {expandedStudents[student.id] ? (
+                            <FiChevronDown size={20} className="text-info" />
+                          ) : (
+                            <FiChevronRight size={20} className="text-muted" />
+                          )}
+                        </div>
+
+                        {/* Student Info */}
+                        <div style={{ flex: 1 }}>
+                          <div className="fw-semibold">{student.name}</div>
+                          <small className="text-muted">
+                            {student.student_id}
+                          </small>
+                        </div>
+
+                        {/* Record Count */}
+                        <div style={{ minWidth: "150px" }}>
+                          <small className="text-muted">
+                            {Object.values(student.recordsByType)
+                              .flat()
+                              .reduce(
+                                (sum, r) => sum + (r.files?.length || 0),
+                                0,
+                              )}{" "}
+                            file
+                            {Object.values(student.recordsByType)
+                              .flat()
+                              .reduce(
+                                (sum, r) => sum + (r.files?.length || 0),
+                                0,
+                              ) !== 1 && "s"}{" "}
+                            across {Object.keys(student.recordsByType).length}{" "}
+                            record
+                            {Object.keys(student.recordsByType).length !== 1 &&
+                              "s"}
+                          </small>
+                        </div>
+                      </div>
+
+                      {/* Expanded Content */}
+                      {expandedStudents[student.id] && (
+                        <div
+                          style={{
+                            backgroundColor: "#f8f9fa",
+                            borderBottom: "1px solid #dee2e6",
+                          }}
+                        >
+                          {/* Records grouped by type */}
+                          {Object.entries(student.recordsByType).map(
+                            ([recordType, typeRecords]) => (
+                              <div
+                                key={recordType}
+                                style={{
+                                  borderBottom: "1px solid #dee2e6",
+                                  padding: "1rem",
+                                  marginLeft: "2.5rem",
+                                }}
+                              >
+                                {/* Record Type Header */}
+                                <div
+                                  style={{
+                                    marginBottom: "0.75rem",
+                                    paddingBottom: "0.5rem",
+                                    borderBottom: "1px solid #e0e0e0",
+                                  }}
+                                >
+                                  <span className="badge bg-info">
+                                    {Array.isArray(recordTypes)
+                                      ? recordTypes.find(
+                                          (t) => t.code === recordType,
+                                        )?.name || recordType
+                                      : recordTypes[recordType] || recordType}
+                                  </span>
                                 </div>
-                              ) : (
-                                <span className="text-muted">-</span>
-                              )}
-                            </button>
-                          </td>
-                          <td>
-                            <span className="badge bg-info">
-                              {RECORD_TYPE_CONFIG[record.record_type]?.short ||
-                                record.record_type}
-                            </span>
-                          </td>
-                          <td>
-                            {record.files && record.files.length > 0 ? (
-                              <div className="d-flex align-items-center gap-1">
-                                <FiPaperclip size={14} />
-                                <small>
-                                  {record.files.length} file
-                                  {record.files.length !== 1 && "s"}
-                                </small>
+
+                                {/* Records for this type */}
+                                <div className="list-group">
+                                  {typeRecords.map((record) => (
+                                    <div
+                                      key={record.id}
+                                      className="list-group-item"
+                                      style={{
+                                        padding: "0.75rem",
+                                        marginBottom: "0.5rem",
+                                        backgroundColor: "#fff",
+                                        border: "1px solid #dee2e6",
+                                        borderRadius: "0.25rem",
+                                      }}
+                                    >
+                                      <div className="d-flex justify-content-between align-items-start">
+                                        <div style={{ flex: 1 }}>
+                                          <small className="text-muted d-block mb-2">
+                                            Created{" "}
+                                            {formatDate(record.created_at)}
+                                          </small>
+                                          {record.files &&
+                                          record.files.length > 0 ? (
+                                            <div
+                                              style={{ marginTop: "0.5rem" }}
+                                            >
+                                              <small className="fw-semibold d-block mb-2">
+                                                Files ({record.files.length}):
+                                              </small>
+                                              <ul
+                                                style={{
+                                                  paddingLeft: "1.25rem",
+                                                  marginBottom: "0.5rem",
+                                                }}
+                                              >
+                                                {record.files.map((file) => (
+                                                  <li key={file.id}>
+                                                    <small>
+                                                      {file.file_name} (
+                                                      {formatFileSize(
+                                                        file.file_size,
+                                                      )}
+                                                      )
+                                                    </small>
+                                                  </li>
+                                                ))}
+                                              </ul>
+                                            </div>
+                                          ) : (
+                                            <small className="text-muted">
+                                              No files
+                                            </small>
+                                          )}
+                                        </div>
+                                        <div className="d-flex gap-2 ms-2">
+                                          <button
+                                            className="btn btn-sm btn-outline-primary"
+                                            onClick={() =>
+                                              handleViewRecord(record)
+                                            }
+                                            title="View"
+                                          >
+                                            <FiEye size={14} />
+                                          </button>
+                                          <button
+                                            className="btn btn-sm btn-outline-primary"
+                                            onClick={() =>
+                                              openEditModal(record)
+                                            }
+                                            title="Edit"
+                                          >
+                                            <FiEdit2 size={14} />
+                                          </button>
+                                          <button
+                                            className="btn btn-sm btn-outline-danger"
+                                            onClick={() =>
+                                              handleDeleteClick(record)
+                                            }
+                                            title="Delete"
+                                          >
+                                            <FiTrash2 size={14} />
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
-                            ) : (
-                              <span className="text-muted">-</span>
-                            )}
-                          </td>
-                          <td>
-                            <small className="text-muted">
-                              {formatDate(record.created_at)}
-                            </small>
-                          </td>
-                          <td>
-                            <div className="d-flex gap-1">
-                              <button
-                                className="btn btn-sm btn-outline-primary"
-                                onClick={() => openEditModal(record)}
-                                title="Edit"
-                              >
-                                <FiEdit2 size={14} />
-                              </button>
-                              <button
-                                className="btn btn-sm btn-outline-danger"
-                                onClick={() => handleDeleteClick(record)}
-                                title="Delete"
-                              >
-                                <FiTrash2 size={14} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                            ),
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -823,16 +1067,21 @@ export default function RecordManagement() {
                         className="form-select"
                         value={modalRecordType}
                         onChange={(e) => setModalRecordType(e.target.value)}
-                        disabled={modalMode === "edit"}
+                        disabled={modalMode === "edit" || loadingTypes}
                       >
-                        <option value="tor">Transcript of Records (TOR)</option>
-                        <option value="special-order">Special Order</option>
-                        <option value="psa">PSA</option>
-                        <option value="comprehensive-exam">
-                          Comprehensive Exam
-                        </option>
-                        <option value="diploma">Diploma</option>
+                        <option value="">-- Choose a record type --</option>
+                        {Array.isArray(recordTypes) &&
+                          recordTypes.map((type) => (
+                            <option key={type.code} value={type.code}>
+                              {type.name}
+                            </option>
+                          ))}
                       </select>
+                      {loadingTypes && (
+                        <small className="text-muted">
+                          Loading record types...
+                        </small>
+                      )}
                     </div>
                   )}
                   {/* Student Selector (always shown) */}
@@ -1107,14 +1356,6 @@ export default function RecordManagement() {
                 </div>
                 <div className="modal-footer">
                   <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => setShowModal(false)}
-                    disabled={submitting}
-                  >
-                    Cancel
-                  </button>
-                  <button
                     type="submit"
                     className="btn btn-success d-flex align-items-center gap-2"
                     disabled={submitting}
@@ -1155,7 +1396,7 @@ export default function RecordManagement() {
                   <div className="col-12">
                     <span className="badge bg-success">
                       {selectedRecord.record_type
-                        ? RECORD_TYPE_CONFIG[selectedRecord.record_type]?.label
+                        ? selectedRecord.record_type
                         : typeConfig.short}
                     </span>
                   </div>

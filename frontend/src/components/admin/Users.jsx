@@ -342,16 +342,14 @@ function Users() {
                           <label className="form-label">
                             Role <span className="text-danger">*</span>
                           </label>
-                          <select
-                            className={`form-select ${formErrors.role ? "is-invalid" : ""}`}
-                            name="role"
-                            value={formData.role}
-                            onChange={handleInputChange}
-                            required
-                          >
-                            <option value="staff">Staff</option>
-                            <option value="admin">Admin</option>
-                          </select>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value="Admin"
+                            disabled
+                            readOnly
+                          />
+                          <input type="hidden" name="role" value="admin" />
                           {formErrors.role && (
                             <div className="invalid-feedback">
                               {formErrors.role[0]}

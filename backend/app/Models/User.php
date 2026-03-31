@@ -19,13 +19,26 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
+        'student_id',
         'firstname',
         'middlename',
         'lastname',
-        'username',
+        'suffix',
         'email',
         'password',
         'role',
+        'age',
+        'birthdate',
+        'address',
+        'contact_number',
+        'gender',
+        'course_id',
+        'status',
+        'email_verification_otp',
+        'otp_expires_at',
+        'email_verified_at',
+        'is_admin_verified',
+        'verification_rejected_reason',
     ];
 
     /**
@@ -46,6 +59,7 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'otp_expires_at' => 'datetime',
         'password' => 'hashed',
         'deleted_at' => 'datetime',
     ];
@@ -69,5 +83,23 @@ class User extends Authenticatable
               ->orWhere('email', 'like', $searchPattern)
               ->orWhere('username', 'like', $searchPattern);
         });
+    }
+
+    /**
+     * Scope for filtering verified students.
+     */
+    public function scopeVerifiedStudents($query)
+    {
+        return $query->where('role', 'student')
+            ->where('is_admin_verified', true);
+    }
+
+    /**
+     * Scope for filtering unverified students.
+     */
+    public function scopeUnverifiedStudents($query)
+    {
+        return $query->where('role', 'student')
+            ->where('is_admin_verified', false);
     }
 }

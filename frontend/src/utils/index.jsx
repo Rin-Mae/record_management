@@ -62,5 +62,5 @@ export const initialUserForm = {
   email: "",
   password: "",
   password_confirmation: "",
-  role: "staff",
+  role: "admin",
 };

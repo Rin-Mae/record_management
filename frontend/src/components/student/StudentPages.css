@@ -1,0 +1,213 @@
+/* Student Pages Styling */
+
+.student-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.student-main-content {
+  flex: 1;
+  transition: margin-left 0.3s ease-in-out;
+  margin-left: 0;
+}
+
+@media (min-width: 992px) {
+  .student-main-content {
+    margin-left: 280px;
+  }
+}
+
+/* Mobile adjustments */
+@media (max-width: 991px) {
+  .student-main-content {
+    padding-top: 60px;
+  }
+}
+
+/* Table styling */
+.table-hover tbody tr:hover {
+  background-color: rgba(45, 106, 79, 0.05);
+}
+
+.btn-group .btn {
+  padding: 0.375rem 0.5rem;
+}
+
+/* Upload Area */
+.upload-area {
+  padding: 1.5rem;
+  border: 2px dashed #dee2e6;
+  border-radius: 0.5rem;
+  background: #f8f9fa;
+  transition: all 0.3s ease;
+}
+
+.upload-area:hover {
+  border-color: #2d6a4f;
+  background: #e7f5f0;
+}
+
+.upload-area input[type="file"] {
+  display: block;
+  width: 100%;
+}
+
+/* File Preview */
+.file-preview {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 0.375rem;
+  margin-top: 1rem;
+}
+
+.file-preview p {
+  margin: 0;
+}
+
+/* Information Card */
+.card.bg-light {
+  border-color: #dee2e6;
+}
+
+.card.bg-light .card-body {
+  background: #f8f9fa;
+}
+
+.card.bg-light ul li {
+  margin-bottom: 0.5rem;
+  color: #495057;
+}
+
+/* Badge styling */
+.badge {
+  font-weight: 500;
+  padding: 0.5rem 0.75rem;
+}
+
+.badge.bg-success {
+  background-color: #28a745 !important;
+}
+
+.badge.bg-warning {
+  background-color: #ffc107 !important;
+  color: #333;
+}
+
+.badge.bg-danger {
+  background-color: #dc3545 !important;
+}
+
+/* Button styling */
+.btn-success {
+  background-color: #2d6a4f;
+  border-color: #2d6a4f;
+}
+
+.btn-success:hover {
+  background-color: #1a472a;
+  border-color: #1a472a;
+}
+
+.btn-outline-info {
+  color: #0dcaf0;
+  border-color: #0dcaf0;
+}
+
+.btn-outline-info:hover {
+  background-color: #0dcaf0;
+  border-color: #0dcaf0;
+  color: white;
+}
+
+.btn-outline-danger {
+  color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
+/* Form styling */
+.form-label {
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.form-control,
+.form-select {
+  border-color: #dee2e6;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #2d6a4f;
+  box-shadow: 0 0 0 0.2rem rgba(45, 106, 79, 0.25);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  background-color: #e9ecef;
+  color: #6c757d;
+}
+
+/* Empty state */
+.card .card-body.text-center {
+  padding: 3rem 1rem;
+}
+
+.card .card-title {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.card .card-text {
+  font-size: 0.95rem;
+}
+
+/* Loading spinner */
+.spinner-border.text-success {
+  color: #2d6a4f !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .container-fluid {
+    padding: 1rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  .table {
+    font-size: 0.875rem;
+  }
+
+  .btn-group {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .btn-group .btn {
+    width: 100%;
+  }
+}
+
+/* Utility classes */
+.text-danger {
+  color: #dc3545;
+}
+
+.small {
+  font-size: 0.875rem;
+}
+
+.fw-semibold {
+  font-weight: 600;
+}

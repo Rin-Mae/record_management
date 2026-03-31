@@ -11,7 +11,7 @@ class StoreStudentRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user() && ($this->user()->role === 'admin' || $this->user()->role === 'staff');
+        return $this->user() && $this->user()->role === 'admin';
     }
 
     /**

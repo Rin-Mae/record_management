@@ -1,0 +1,10 @@
+/* RecordTypeManagement - Minimal CSS (Bootstrap handles most styling) */
+
+/* Modal overlay */
+.modal.show {
+  display: block !important;
+}
+
+.modal-backdrop {
+  display: none;
+}

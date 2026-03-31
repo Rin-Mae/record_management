@@ -118,6 +118,19 @@ function Login() {
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
+
+        <div className="text-center mt-3">
+          <p className="mb-0 text-muted">
+            Don't have an account?{" "}
+            <button
+              type="button"
+              className="btn btn-link p-0"
+              onClick={() => navigate("/register")}
+            >
+              Register here
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );

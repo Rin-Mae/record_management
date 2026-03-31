@@ -22,6 +22,7 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'student_id' => ['required', 'string', 'size:8', 'regex:/^\d{8}$/', 'unique:users,student_id'],
             'firstname' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z ]+$/'],
             'middlename' => ['nullable', 'string', 'max:255', 'regex:/^[a-zA-Z ]+$/'],
             'lastname' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z ]+$/'],
@@ -29,6 +30,7 @@ class RegisterRequest extends FormRequest
             'address' => ['required', 'string', 'max:255'],
             'contact_number' => ['required', 'regex:/^0[0-9]{10}$/'],
             'gender' => ['required', 'in:male,female'],
+            'course_id' => ['required', 'exists:courses,id'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'password_confirmation' => ['required', 'string'],
@@ -41,6 +43,10 @@ class RegisterRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'student_id.required' => 'Student ID is required.',
+            'student_id.size' => 'Student ID must be exactly 8 numbers.',
+            'student_id.regex' => 'Student ID must contain only numbers.',
+            'student_id.unique' => 'This student ID already exists.',
             'firstname.required' => 'First name is required.',
             'firstname.regex' => 'First name can only contain letters and spaces.',
             'lastname.required' => 'Last name is required.',
@@ -48,6 +54,8 @@ class RegisterRequest extends FormRequest
             'birthdate.required' => 'Birthdate is required.',
             'birthdate.before' => 'Birthdate must be in the past.',
             'contact_number.regex' => 'Contact number must be a valid Philippine number (0XXXXXXXXXX).',
+            'course_id.required' => 'Course is required.',
+            'course_id.exists' => 'Selected course does not exist.',
             'email.unique' => 'This email address is already registered.',
             'password.min' => 'Password must be at least 8 characters.',
             'password.confirmed' => 'Password confirmation does not match.',

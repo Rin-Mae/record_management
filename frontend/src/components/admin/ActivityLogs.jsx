@@ -299,6 +299,15 @@ export default function ActivityLogs() {
                                   {log.user.email}
                                 </small>
                               </div>
+                            ) : log.user_name ? (
+                              <div>
+                                <div className="fw-semibold">
+                                  {log.user_name}
+                                </div>
+                                <small className="text-muted">
+                                  (User not found)
+                                </small>
+                              </div>
                             ) : (
                               <span className="text-muted">-</span>
                             )}
@@ -467,6 +476,15 @@ export default function ActivityLogs() {
                               </div>
                               <small className="text-muted">
                                 {selectedLog.user.email}
+                              </small>
+                            </div>
+                          ) : selectedLog.user_name ? (
+                            <div>
+                              <div className="fw-semibold">
+                                {selectedLog.user_name}
+                              </div>
+                              <small className="text-muted">
+                                (User not found)
                               </small>
                             </div>
                           ) : (

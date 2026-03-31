@@ -15,7 +15,7 @@ import Sidebar from "../adminLayout/Sidebar";
 import StudentServices from "../../services/StudentServices.jsx";
 
 function AdminDashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [stats, setStats] = useState({
@@ -30,8 +30,10 @@ function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchStatistics();
-  }, []);
+    if (!authLoading && user) {
+      fetchStatistics();
+    }
+  }, [authLoading, user]);
 
   const fetchStatistics = async () => {
     try {

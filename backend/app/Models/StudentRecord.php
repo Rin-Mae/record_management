@@ -16,8 +16,9 @@ class StudentRecord extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'student_id',
+        'user_id',
         'record_type',
+        'record_type_id',
         'title',
         'description',
         'record_date',
@@ -26,17 +27,19 @@ class StudentRecord extends Model
         'file_type',
         'file_size',
         'remarks',
+        'verification_status',
+        'verified_by',
+        'verified_at',
     ];
 
     /**
      * Valid record types.
      */
     public const RECORD_TYPES = [
+        'birth-certificate' => 'Birth Certificate',
+        'marriage-certificate' => 'Marriage Certificate',
         'tor' => 'Transcript of Records',
-        'special-order' => 'Special Order',
-        'psa' => 'PSA',
         'comprehensive-exam' => 'Comprehensive Exam',
-        'diploma' => 'Diploma',
     ];
 
     /**
@@ -44,7 +47,7 @@ class StudentRecord extends Model
      * All types now use this form.
      */
     public const SIMPLIFIED_TYPES = [
-        'tor', 'special-order', 'psa', 'comprehensive-exam', 'diploma',
+        'birth-certificate', 'marriage-certificate', 'tor', 'comprehensive-exam',
     ];
 
     /**
@@ -54,14 +57,39 @@ class StudentRecord extends Model
      */
     protected $casts = [
         'record_date' => 'date',
+        'verified_at' => 'datetime',
     ];
 
     /**
-     * Get the student that owns the record.
+     * Get the user (student) that owns the record.
+     */
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class);
+    }
+
+    /**
+     * Get the student that owns the record (alias for backward compatibility).
      */
     public function student()
     {
-        return $this->belongsTo(Student::class);
+        return $this->belongsTo(\App\Models\User::class);
+    }
+
+    /**
+     * Get the admin user who verified this record.
+     */
+    public function verifiedBy()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'verified_by');
+    }
+
+    /**
+     * Get the record type associated with this record.
+     */
+    public function recordType()
+    {
+        return $this->belongsTo(\App\Models\RecordType::class, 'record_type_id');
     }
 
     /**

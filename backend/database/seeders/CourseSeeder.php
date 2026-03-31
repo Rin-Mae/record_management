@@ -13,58 +13,58 @@ class CourseSeeder extends Seeder
     public function run(): void
     {
         $courses = [
-            // Basic Education
+            // Basic Education Center
             ['code' => 'ELEM', 'name' => 'Elementary School', 'department' => 'Basic Education Center', 'description' => 'Elementary school level'],
             ['code' => 'JHS', 'name' => 'Junior Highschool', 'department' => 'Basic Education Center', 'description' => 'Junior high school level'],
             
-            // Senior Highschool - Tracks
+            // Senior Highschool - Academic Track
             ['code' => 'SHS-ABM', 'name' => 'Accountancy and Business Management (ABM)', 'department' => 'Basic Education Center', 'description' => 'Senior Highschool ABM Track'],
             ['code' => 'SHS-STEM', 'name' => 'Science Technology Engineering and Mathematics (STEM)', 'department' => 'Basic Education Center', 'description' => 'Senior Highschool STEM Track'],
             ['code' => 'SHS-HUMSS', 'name' => 'Humanities and Social Sciences (HUMSS)', 'department' => 'Basic Education Center', 'description' => 'Senior Highschool HUMSS Track'],
-            ['code' => 'SHS-HE', 'name' => 'Home Economics (HE)', 'department' => 'Basic Education Center', 'description' => 'Senior Highschool HE Track'],
-            ['code' => 'SHS-ICT', 'name' => 'Information Communication Technology (ICT)', 'department' => 'Basic Education Center', 'description' => 'Senior Highschool ICT Track'],
+            
+            // Senior Highschool - Technical and Vocational Track
+            ['code' => 'SHS-HE', 'name' => 'Home Economics (HE)', 'department' => 'Basic Education Center', 'description' => 'Senior Highschool Home Economics Track'],
+            ['code' => 'SHS-ICT', 'name' => 'Information and Communication Technology (ICT)', 'department' => 'Basic Education Center', 'description' => 'Senior Highschool ICT Track'],
 
-            // College - Science & Technology
-            ['code' => 'BSIT', 'name' => 'Bachelor of Science in Information Technology', 'department' => 'College', 'description' => 'IT degree program'],
-            ['code' => 'BSCS', 'name' => 'Bachelor of Science in Computer Science', 'department' => 'College', 'description' => 'Computer Science degree'],
-            ['code' => 'BSE', 'name' => 'Bachelor of Science in Engineering', 'department' => 'College', 'description' => 'Engineering degree'],
+            // College Degree - Science & Engineering
+            ['code' => 'BSGE', 'name' => 'Bachelor of Science in Geodetic Engineering', 'department' => 'College Degree', 'description' => 'Geodetic Engineering degree'],
+            
+            // College Degree - Business & Accountancy
+            ['code' => 'BSA', 'name' => 'Bachelor of Science in Accountancy', 'department' => 'College Degree', 'description' => 'Accountancy degree'],
+            ['code' => 'BSBA', 'name' => 'Bachelor of Science in Business Administration', 'department' => 'College Degree', 'description' => 'Business Administration degree'],
+            ['code' => 'BSBA-FM', 'name' => 'BSBA - Financial Management', 'department' => 'College Degree', 'description' => 'Business Admin with Financial Management'],
+            ['code' => 'BSBA-MM', 'name' => 'BSBA - Marketing Management', 'department' => 'College Degree', 'description' => 'Business Admin with Marketing Management'],
+            ['code' => 'BSBA-MA', 'name' => 'BSBA - Management Accounting', 'department' => 'College Degree', 'description' => 'Business Admin with Management Accounting'],
+            ['code' => 'BSBA-HRM', 'name' => 'BSBA - Human Resource Management', 'department' => 'College Degree', 'description' => 'Business Admin with HRM'],
 
-            // College - Business
-            ['code' => 'BSBA', 'name' => 'Bachelor of Science in Business Administration', 'department' => 'College', 'description' => 'Business Administration degree'],
-            ['code' => 'BSBA-FM', 'name' => 'BSBA - Financial Management', 'department' => 'College', 'description' => 'Business Admin with Financial Management'],
-            ['code' => 'BSBA-MM', 'name' => 'BSBA - Marketing Management', 'department' => 'College', 'description' => 'Business Admin with Marketing Management'],
-            ['code' => 'BSBA-HRM', 'name' => 'BSBA - Human Resource Management', 'department' => 'College', 'description' => 'Business Admin with HRM'],
-            ['code' => 'BSMA', 'name' => 'Bachelor of Science in Management Accounting', 'department' => 'College', 'description' => 'Management Accounting degree'],
-            ['code' => 'BSA', 'name' => 'Bachelor of Science in Accountancy', 'department' => 'College', 'description' => 'Accountancy degree'],
+            // College Degree - Education
+            ['code' => 'BEEd', 'name' => 'Bachelor of Elementary Education', 'department' => 'College Degree', 'description' => 'Elementary Education degree'],
+            ['code' => 'BSEd', 'name' => 'Bachelor of Secondary Education', 'department' => 'College Degree', 'description' => 'Secondary Education degree'],
+            ['code' => 'BSEd-Math', 'name' => 'BSEd - Major in Math', 'department' => 'College Degree', 'description' => 'Secondary Ed with Mathematics'],
+            ['code' => 'BSEd-English', 'name' => 'BSEd - Major in English', 'department' => 'College Degree', 'description' => 'Secondary Ed with English'],
+            ['code' => 'BSEd-Filipino', 'name' => 'BSEd - Major in Filipino', 'department' => 'College Degree', 'description' => 'Secondary Ed with Filipino'],
+            ['code' => 'BSEd-Science', 'name' => 'BSEd - Major in Science', 'department' => 'College Degree', 'description' => 'Secondary Ed with Science'],
 
-            // College - Liberal Arts
-            ['code' => 'AB-PolSci', 'name' => 'AB Political Science', 'department' => 'College', 'description' => 'Political Science degree'],
-            ['code' => 'AB-English', 'name' => 'AB English', 'department' => 'College', 'description' => 'English degree'],
-            ['code' => 'ABCom', 'name' => 'AB Communication', 'department' => 'College', 'description' => 'Communication degree'],
+            // College Degree - Health Sciences
+            ['code' => 'BSN', 'name' => 'Bachelor of Science in Nursing', 'department' => 'College Degree', 'description' => 'Nursing degree'],
+            ['code' => 'BSCrim', 'name' => 'Bachelor of Science in Criminology', 'department' => 'College Degree', 'description' => 'Criminology degree'],
 
-            // College - Education & Health
-            ['code' => 'BEEd', 'name' => 'Bachelor of Elementary Education', 'department' => 'College', 'description' => 'Elementary Education degree'],
-            ['code' => 'BSEd', 'name' => 'Bachelor of Secondary Education', 'department' => 'College', 'description' => 'Secondary Education degree'],
-            ['code' => 'BSEd-Math', 'name' => 'BSEd - Mathematics', 'department' => 'College', 'description' => 'Secondary Ed with Mathematics'],
-            ['code' => 'BSEd-English', 'name' => 'BSEd - English', 'department' => 'College', 'description' => 'Secondary Ed with English'],
-            ['code' => 'BSEd-Filipino', 'name' => 'BSEd - Filipino', 'department' => 'College', 'description' => 'Secondary Ed with Filipino'],
-            ['code' => 'BSEd-Science', 'name' => 'BSEd - Science', 'department' => 'College', 'description' => 'Secondary Ed with Science'],
-            ['code' => 'BSN', 'name' => 'Bachelor of Science in Nursing', 'department' => 'College', 'description' => 'Nursing degree'],
-            ['code' => 'BSCrim', 'name' => 'Bachelor of Science in Criminology', 'department' => 'College', 'description' => 'Criminology degree'],
+            // College Degree - Liberal Arts
+            ['code' => 'AB-PolSci', 'name' => 'Bachelor of Arts in Political Science', 'department' => 'College Degree', 'description' => 'Political Science degree'],
+            ['code' => 'AB-English', 'name' => 'Bachelor of Arts in English Language Studies', 'department' => 'College Degree', 'description' => 'English Language Studies degree'],
+            ['code' => 'ABCom', 'name' => 'Bachelor of Arts in Communication', 'department' => 'College Degree', 'description' => 'Communication degree'],
 
-            // College - Hospitality & Tourism
-            ['code' => 'BSHM', 'name' => 'Bachelor of Science in Hospitality Management', 'department' => 'College', 'description' => 'Hospitality Management degree'],
+            // College Degree - Information Technology & Hospitality
+            ['code' => 'BSIT', 'name' => 'Bachelor of Science in Information Technology', 'department' => 'College Degree', 'description' => 'Information Technology degree'],
+            ['code' => 'BSHM', 'name' => 'Bachelor of Science in Hospitality Management', 'department' => 'College Degree', 'description' => 'Hospitality Management degree'],
 
-            // College - Geoscience
-            ['code' => 'BSGE', 'name' => 'Bachelor of Science in Geodetic Engineering', 'department' => 'College', 'description' => 'Geodetic Engineering degree'],
-
-            // Graduate Programs
-            ['code' => 'Ph.D', 'name' => 'Doctor of Philosophy', 'department' => 'Graduate', 'description' => 'PhD degree'],
-            ['code' => 'Ed.D', 'name' => 'Doctor of Education', 'department' => 'Graduate', 'description' => 'Doctor of Education'],
-            ['code' => 'MA.Ed', 'name' => 'Master of Arts in Education', 'department' => 'Graduate', 'description' => 'Master of Arts in Education'],
-            ['code' => 'MA.Ed-LL', 'name' => 'MA.Ed - Leadership & Learning', 'department' => 'Graduate', 'description' => 'MA Education with Leadership & Learning'],
-            ['code' => 'MPA', 'name' => 'Master of Public Administration', 'department' => 'Graduate', 'description' => 'Master of Public Administration'],
-            ['code' => 'MBA', 'name' => 'Master of Business Administration', 'department' => 'Graduate', 'description' => 'Master of Business Administration'],
+            // Graduate Program
+            ['code' => 'PhD', 'name' => 'Doctor of Philosophy', 'department' => 'Graduate Program', 'description' => 'PhD degree'],
+            ['code' => 'EdD', 'name' => 'Doctor of Education', 'department' => 'Graduate Program', 'description' => 'Doctor of Education degree'],
+            ['code' => 'MA.Ed', 'name' => 'Master of Arts in Education', 'department' => 'Graduate Program', 'description' => 'Master of Arts in Education'],
+            ['code' => 'MA.Ed-LL', 'name' => 'Master of Arts in Education Major in Language and Literature', 'department' => 'Graduate Program', 'description' => 'MA Education with Language and Literature'],
+            ['code' => 'MPA', 'name' => 'Master in Public Administration', 'department' => 'Graduate Program', 'description' => 'Master of Public Administration'],
+            ['code' => 'MBA', 'name' => 'Master in Business Administration', 'department' => 'Graduate Program', 'description' => 'Master of Business Administration'],
         ];
 
         foreach ($courses as $course) {

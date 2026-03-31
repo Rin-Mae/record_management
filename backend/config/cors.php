@@ -15,7 +15,9 @@ return [
 
     'paths' => [
         'api/*',
+        'csrf-token',
         'sanctum/csrf-cookie',
+        'auth/*',
         'login',
         'register',
         'logout',
@@ -26,10 +28,15 @@ return [
         'students/*',
         'courses',
         'courses/*',
+        'record-types',
+        'record-types/*',
         'records/*',
+        'my-records',
+        'my-records/*',
         'activity-logs',
         'activity-logs/*',
         'dashboard/*',
+        'student-verifications/*',
     ],
 
     'allowed_methods' => ['*'],
@@ -40,7 +47,7 @@ return [
 
     'allowed_headers' => ['*'],
 
-    'exposed_headers' => [],
+    'exposed_headers' => ['X-CSRF-TOKEN'],
 
     'max_age' => 0,
 

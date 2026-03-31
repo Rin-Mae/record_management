@@ -42,11 +42,19 @@ class Student extends Model
     ];
 
     /**
-     * Get the records for the student.
+     * Get the user account associated with this student.
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the records for the student through their user account.
      */
     public function records()
     {
-        return $this->hasMany(StudentRecord::class);
+        return $this->user()->hasMany(StudentRecord::class, 'user_id');
     }
 
     /**

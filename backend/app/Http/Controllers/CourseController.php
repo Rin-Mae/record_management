@@ -59,9 +59,7 @@ class CourseController extends Controller
      */
     public function all()
     {
-        $courses = Cache::remember('courses_all', 3600, function () {
-            return Course::select('id', 'code', 'name')->orderBy('code')->get();
-        });
+        $courses = Course::select('id', 'code', 'name')->orderBy('code')->get();
 
         return response()->json([
             'success' => true,
