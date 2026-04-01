@@ -51,6 +51,7 @@ Route::group(['middleware' => 'web'], function () {
         Route::delete('/student-verifications/{id}', [StudentVerificationController::class, 'deleteApplication']);
 
         Route::get('/students/statistics', [StudentController::class, 'statistics']);
+        Route::get('/students/record-statistics', [StudentController::class, 'recordStatistics']);
         Route::get('/students/records-checklist', [StudentController::class, 'recordsChecklist']);
         Route::get('/students/verified-with-records/{type}', [StudentController::class, 'verifiedStudentsWithRecords']);
         Route::apiResource('students', StudentController::class);

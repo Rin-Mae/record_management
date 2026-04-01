@@ -252,6 +252,93 @@ class StudentController extends Controller
     }
 
     /**
+     * Get paper submission statistics for dashboard.
+     * Returns the count of papers submitted per day, grouped by record type.
+     */
+    public function recordStatistics(Request $request)
+    {
+        // Get the last 30 days of submissions
+        $startDate = now()->subDays(30)->startOfDay();
+        
+        // Get all submission counts grouped by date and type
+        $submissions = \App\Models\StudentRecord::where('created_at', '>=', $startDate)
+            ->selectRaw('DATE(created_at) as date, record_type, COUNT(*) as count')
+            ->groupBy('date', 'record_type')
+            ->orderBy('date', 'asc')
+            ->get();
+        
+        // Get all unique record types from submissions
+        $recordTypes = \App\Models\StudentRecord::where('created_at', '>=', $startDate)
+            ->distinct('record_type')
+            ->pluck('record_type')
+            ->filter(fn($type) => !empty($type))
+            ->toArray();
+        
+        // Transform data: organize by date with counts per type
+        $aggregatedData = [];
+        $dateRange = [];
+        
+        // Generate all dates in range
+        $currentDate = $startDate->copy();
+        while ($currentDate <= now()) {
+            $dateRange[$currentDate->format('Y-m-d')] = $currentDate->format('M d');
+            $currentDate->addDay();
+        }
+        
+        // Initialize aggregated data with all dates
+        foreach ($dateRange as $date => $label) {
+            $aggregatedData[$date] = [
+                'date' => $date,
+                'name' => $label,
+            ];
+            // Initialize counts for all record types
+            foreach ($recordTypes as $type) {
+                $typeKey = str_replace(' ', '_', strtolower($type));
+                $aggregatedData[$date][$typeKey] = 0;
+            }
+        }
+        
+        // Fill in actual submission counts
+        foreach ($submissions as $submission) {
+            $date = $submission->date;
+            $typeKey = str_replace(' ', '_', strtolower($submission->record_type));
+            if (isset($aggregatedData[$date])) {
+                $aggregatedData[$date][$typeKey] = (int) $submission->count;
+            }
+        }
+        
+        // Get total submissions by type (all time)
+        $totalByType = \App\Models\StudentRecord::selectRaw('record_type, COUNT(*) as count')
+            ->where('record_type', '!=', null)
+            ->groupBy('record_type')
+            ->pluck('count', 'record_type')
+            ->toArray();
+        
+        // Get total submissions
+        $totalSubmissions = array_sum($totalByType);
+        
+        // Convert to ordered array (most recent first in display, but data is sorted by date asc)
+        $chartData = array_values($aggregatedData);
+        
+        // Transform totalByType keys to match our convention
+        $totalByTypeFormatted = [];
+        foreach ($totalByType as $type => $count) {
+            $typeKey = str_replace(' ', '_', strtolower($type));
+            $totalByTypeFormatted[$typeKey] = $count;
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'total' => $totalSubmissions,
+                'daily' => $chartData,
+                'byType' => $totalByTypeFormatted,
+                'recordTypes' => $recordTypes,
+            ],
+        ]);
+    }
+
+    /**
      * Get all verified students with their records by type.
      * Includes students with no records yet.
      */

@@ -30,6 +30,11 @@ const StudentServices = {
     const response = await api.get("/students/statistics");
     return response.data;
   },
+
+  async getRecordStatistics() {
+    const response = await api.get("/students/record-statistics");
+    return response.data;
+  },
 };
 
 export default StudentServices;
