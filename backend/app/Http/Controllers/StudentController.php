@@ -260,15 +260,17 @@ class StudentController extends Controller
         // Get the last 30 days of submissions
         $startDate = now()->subDays(30)->startOfDay();
         
-        // Get all submission counts grouped by date and type
+        // Get all submission counts grouped by date and type (only verified records)
         $submissions = \App\Models\StudentRecord::where('created_at', '>=', $startDate)
+            ->where('verification_status', 'verified')
             ->selectRaw('DATE(created_at) as date, record_type, COUNT(*) as count')
             ->groupBy('date', 'record_type')
             ->orderBy('date', 'asc')
             ->get();
         
-        // Get all unique record types from submissions
+        // Get all unique record types from verified submissions
         $recordTypes = \App\Models\StudentRecord::where('created_at', '>=', $startDate)
+            ->where('verification_status', 'verified')
             ->distinct('record_type')
             ->pluck('record_type')
             ->filter(fn($type) => !empty($type))
@@ -307,9 +309,10 @@ class StudentController extends Controller
             }
         }
         
-        // Get total submissions by type (all time)
-        $totalByType = \App\Models\StudentRecord::selectRaw('record_type, COUNT(*) as count')
+        // Get total submissions by type (all time, verified only)
+        $totalByType = \App\Models\StudentRecord::where('verification_status', 'verified')
             ->where('record_type', '!=', null)
+            ->selectRaw('record_type, COUNT(*) as count')
             ->groupBy('record_type')
             ->pluck('count', 'record_type')
             ->toArray();
@@ -368,32 +371,31 @@ class StudentController extends Controller
             ->orderBy('lastname', 'asc')
             ->get();
 
-        // For each student, get their records of the specified type
-        $result = $students->map(function ($student) use ($actualTypeName) {
-            $record = \App\Models\StudentRecord::where('user_id', $student->id)
+        // For each student, get ALL their records of the specified type
+        $result = [];
+        foreach ($students as $student) {
+            $records = \App\Models\StudentRecord::where('user_id', $student->id)
                 ->where('record_type', $actualTypeName)
                 ->where('verification_status', 'verified') // Only return verified records
                 ->with('files')
-                ->first();
+                ->get();
 
-            // Return record data or null
-            if (!$record) {
-                return null; // Will be filtered out below
+            // Add each record separately
+            foreach ($records as $record) {
+                $result[] = [
+                    'id' => $record->id,
+                    'user_id' => $record->user_id,
+                    'record_type' => $record->record_type,
+                    'title' => $record->title,
+                    'description' => $record->description ?? null,
+                    'created_at' => $record->created_at,
+                    'updated_at' => $record->updated_at,
+                    'student' => $student,
+                    'files' => $record->files ?? [],
+                ];
             }
-
-            // Return consistent structure
-            return [
-                'id' => $record->id,
-                'user_id' => $record->user_id,
-                'record_type' => $record->record_type,
-                'title' => $record->title,
-                'description' => $record->description ?? null,
-                'created_at' => $record->created_at,
-                'updated_at' => $record->updated_at,
-                'student' => $student,
-                'files' => $record->files ?? [],
-            ];
-        })->filter()->values(); // Remove nulls and reset keys
+        }
+        $result = collect($result)->values(); // Reset keys
 
         return response()->json([
             'success' => true,

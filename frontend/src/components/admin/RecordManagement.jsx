@@ -180,8 +180,7 @@ export default function RecordManagement() {
 
         if (isUnifiedView) {
           // In unified view, fetch all verified students with all their records
-          // Get all students from all record types
-          const seenRecords = new Set(); // Deduplicate by (studentId, recordType)
+          // Get all individual records from all record types (no deduplication)
 
           const typeCodes = recordTypes.map((type) => type.code);
           const promises = typeCodes.map((type) =>
@@ -201,16 +200,9 @@ export default function RecordManagement() {
             if (res.success && Array.isArray(res.data)) {
               const type = typeCodes[index]; // Get the type code for this batch of records
               res.data.forEach((item) => {
-                const studentId = item.student?.id;
-                const recordKey = `${studentId}-${type}`; // Use type code for key
-
-                // Add record only if we haven't seen this (studentId, recordType) combination
-                if (studentId && !seenRecords.has(recordKey)) {
-                  seenRecords.add(recordKey);
-                  // Force record_type to be the code for filtering to work correctly
-                  item.record_type = type;
-                  allRecords.push(item);
-                }
+                // Force record_type to be the code for filtering to work correctly
+                item.record_type = type;
+                allRecords.push(item);
               });
             }
           });
