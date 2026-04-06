@@ -581,4 +581,71 @@ class StudentRecordController extends Controller
             'data' => $record->load(['user', 'files']),
         ]);
     }
+
+    /**
+     * Get the authenticated student's own records checklist.
+     */
+    public function studentRecordsChecklist(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user || $user->role !== 'student') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized. Only students can view their own records checklist.',
+            ], 403);
+        }
+
+        try {
+            // Get all record types
+            $recordTypes = RecordType::select('id', 'name')->orderBy('name')->get();
+
+            // Get all student's records grouped by type
+            $studentRecords = StudentRecord::where('user_id', $user->id)
+                ->select('id', 'user_id', 'record_type', 'verification_status', 'created_at')
+                ->get();
+
+            // Build checklist data for student
+            $recordsMap = [];
+            
+            foreach ($recordTypes as $type) {
+                // Filter records for this type
+                $typeRecords = $studentRecords->filter(function ($record) use ($type) {
+                    return $record->record_type === $type->name;
+                });
+                
+                // Only count verified records as submitted
+                $verifiedRecords = $typeRecords->where('verification_status', 'verified');
+                
+                $recordsMap[$type->name] = [
+                    'count' => $verifiedRecords->count(),
+                    'submitted' => $verifiedRecords->count() > 0,
+                    'verified' => $verifiedRecords->count(),
+                    'pending' => $typeRecords->where('verification_status', 'pending')->count(),
+                    'rejected' => $typeRecords->where('verification_status', 'rejected')->count(),
+                ];
+            }
+
+            // Get record types for frontend
+            $types = $recordTypes->map(function ($type) {
+                return [
+                    'id' => $type->id,
+                    'name' => $type->name,
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'records' => $recordsMap,
+                    'record_types' => $types,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Student records checklist error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load records checklist: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 }

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { CoursesProvider } from "./contexts/CoursesContext";
+import AlertModal from "./components/AlertModal";
 
 // Lazy load components for better initial load performance
 const Login = lazy(() => import("./components/Login"));
@@ -34,6 +35,9 @@ const PendingVerification = lazy(
   () => import("./components/admin/PendingVerification"),
 );
 const MyRecords = lazy(() => import("./components/student/MyRecords"));
+const StudentMyRecordsChecklist = lazy(
+  () => import("./components/student/StudentMyRecordsChecklist"),
+);
 const UploadRecord = lazy(() => import("./components/student/UploadRecord"));
 const EditProfile = lazy(() => import("./components/student/EditProfile"));
 
@@ -117,6 +121,7 @@ function App() {
           pauseOnHover
           limit={3}
         />
+        <AlertModal />
         <BrowserRouter>
           <Suspense fallback={<LoadingSpinner />}>
             <Routes>
@@ -279,6 +284,14 @@ function App() {
                 element={
                   <StudentRoute>
                     <MyRecords />
+                  </StudentRoute>
+                }
+              />
+              <Route
+                path="/student/records-checklist"
+                element={
+                  <StudentRoute>
+                    <StudentMyRecordsChecklist />
                   </StudentRoute>
                 }
               />

@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-import { toast } from "react-toastify";
 import { useAuth } from "../../contexts/AuthContext";
 import CourseServices from "../../services/CourseServices.jsx";
 import { FiMenu, FiPlus, FiEdit2, FiTrash2, FiSearch } from "react-icons/fi";
@@ -90,7 +89,7 @@ export default function Courses() {
           setDepartments(uniqueDepts);
         }
       } catch (error) {
-        toast.error("Failed to fetch courses");
+        window.showAlert("error", "Failed to fetch courses");
       } finally {
         setLoading(false);
       }
@@ -183,10 +182,10 @@ export default function Courses() {
     try {
       if (modalMode === "create") {
         await CourseServices.createCourse(formData);
-        toast.success("Course created successfully");
+        window.showAlert("success", "Course created successfully");
       } else {
         await CourseServices.updateCourse(selectedCourse.id, formData);
-        toast.success("Course updated successfully");
+        window.showAlert("success", "Course updated successfully");
       }
 
       setShowModal(false);
@@ -196,7 +195,10 @@ export default function Courses() {
       if (Object.keys(errors).length > 0) {
         setFormErrors(errors);
       } else {
-        toast.error(error.response?.data?.message || "Failed to save course");
+        window.showAlert(
+          "error",
+          error.response?.data?.message || "Failed to save course",
+        );
       }
     } finally {
       setSubmitting(false);
@@ -213,12 +215,15 @@ export default function Courses() {
   const confirmDelete = async () => {
     try {
       await CourseServices.deleteCourse(courseToDelete.id);
-      toast.success("Course deleted successfully");
+      window.showAlert("success", "Course deleted successfully");
       setShowDeleteModal(false);
       setCourseToDelete(null);
       fetchCourses();
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to delete course");
+      window.showAlert(
+        "error",
+        error.response?.data?.message || "Failed to delete course",
+      );
     }
   };
 
@@ -287,7 +292,7 @@ export default function Courses() {
                             " ",
                           ]);
                           if (!validation.isValid) {
-                            toast.error(validation.message);
+                            window.showAlert("error", validation.message);
                             return;
                           }
                           setSearch(value);

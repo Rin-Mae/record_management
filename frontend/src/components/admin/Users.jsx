@@ -476,14 +476,6 @@ function Users() {
                   <div className="modal-footer">
                     <button
                       type="button"
-                      className="btn btn-secondary"
-                      onClick={() => setShowDeleteModal(false)}
-                      disabled={deleting}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
                       className="btn btn-danger"
                       onClick={handleDelete}
                       disabled={deleting}

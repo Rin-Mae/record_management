@@ -74,6 +74,7 @@ Route::group(['middleware' => 'web'], function () {
         // Student record upload endpoints (for students to upload their own records)
         Route::post('/my-records/type/{type}', [StudentRecordController::class, 'studentStoreByType']);
         Route::get('/my-records', [StudentRecordController::class, 'studentRecords']);
+        Route::get('/my-records/checklist', [StudentRecordController::class, 'studentRecordsChecklist']);
 
         // Record verification endpoints (admin only)
         Route::get('/records/pending-verification', [StudentRecordController::class, 'getPendingVerification']);

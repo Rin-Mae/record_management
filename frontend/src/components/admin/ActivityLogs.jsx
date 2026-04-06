@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 import { useAuth } from "../../contexts/AuthContext";
 import { FiMenu, FiSearch, FiFilter, FiEye } from "react-icons/fi";
 import Sidebar from "../adminLayout/Sidebar";
@@ -38,7 +37,7 @@ export default function ActivityLogs() {
       await logout();
       navigate("/", { replace: true });
     } catch (err) {
-      toast.error("Logout failed");
+      window.showAlert("error", "Logout failed");
     }
   };
 
@@ -106,7 +105,7 @@ export default function ActivityLogs() {
         }
       } catch (error) {
         console.error("Failed to fetch activity logs:", error);
-        toast.error("Failed to fetch activity logs");
+        window.showAlert("error", "Failed to fetch activity logs");
       } finally {
         setLoading(false);
       }
@@ -199,7 +198,7 @@ export default function ActivityLogs() {
                           ".",
                         ]);
                         if (!validation.isValid) {
-                          toast.error(validation.message);
+                          window.showAlert("error", validation.message);
                           return;
                         }
                         setSearchTerm(value);

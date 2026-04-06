@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "react-toastify";
 import { useAuth } from "../../contexts/AuthContext";
 import StudentServices from "../../services/StudentServices.jsx";
 import StudentRecordServices from "../../services/StudentRecordServices.jsx";
@@ -147,7 +146,7 @@ export default function RecordManagement() {
         }
       } catch (error) {
         console.error("Failed to fetch record types:", error);
-        toast.error("Failed to load record types");
+        window.showAlert("error", "Failed to load record types");
       } finally {
         setLoadingTypes(false);
       }
@@ -294,7 +293,7 @@ export default function RecordManagement() {
         });
       } catch (error) {
         console.error("Failed to fetch records:", error);
-        toast.error("Failed to fetch records");
+        window.showAlert("error", "Failed to fetch records");
       } finally {
         setLoading(false);
       }
@@ -491,7 +490,7 @@ export default function RecordManagement() {
           data,
         );
         if (response.success) {
-          toast.success("Record created successfully");
+          window.showAlert("success", "Record created successfully");
           setShowModal(false);
           fetchRecords(pagination.currentPage);
         }
@@ -506,7 +505,7 @@ export default function RecordManagement() {
           data,
         );
         if (response.success) {
-          toast.success("Record updated successfully");
+          window.showAlert("success", "Record updated successfully");
           setShowModal(false);
           fetchRecords(pagination.currentPage);
         }
@@ -516,7 +515,10 @@ export default function RecordManagement() {
       if (serverErrors) {
         setFormErrors(serverErrors);
       } else {
-        toast.error(error.response?.data?.message || "Failed to save record");
+        window.showAlert(
+          "error",
+          error.response?.data?.message || "Failed to save record",
+        );
       }
     } finally {
       setSubmitting(false);
@@ -544,13 +546,16 @@ export default function RecordManagement() {
         recordToDelete.id,
       );
       if (response.success) {
-        toast.success("Record deleted successfully");
+        window.showAlert("success", "Record deleted successfully");
         setShowDeleteModal(false);
         setRecordToDelete(null);
         fetchRecords(pagination.currentPage);
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to delete record");
+      window.showAlert(
+        "error",
+        error.response?.data?.message || "Failed to delete record",
+      );
     } finally {
       setDeleting(false);
     }
@@ -1581,13 +1586,6 @@ export default function RecordManagement() {
                 </p>
               </div>
               <div className="modal-footer">
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => setShowDeleteModal(false)}
-                  disabled={deleting}
-                >
-                  Cancel
-                </button>
                 <button
                   className="btn btn-danger d-flex align-items-center gap-2"
                   onClick={confirmDelete}

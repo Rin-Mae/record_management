@@ -11,7 +11,6 @@ import {
   FiAlertCircle,
 } from "react-icons/fi";
 import { useAuth } from "../../contexts/AuthContext";
-import { toast } from "react-toastify";
 import StudentRecordServices from "../../services/StudentRecordServices.jsx";
 import StudentSidebar from "../studentLayout/StudentSidebar";
 import "./StudentPages.css";
@@ -82,7 +81,7 @@ function MyRecords() {
         }
       } catch (error) {
         console.error("Failed to fetch records:", error);
-        toast.error("Failed to load records");
+        window.showAlert("error", "Failed to load records");
       } finally {
         setLoading(false);
       }
@@ -111,7 +110,7 @@ function MyRecords() {
 
   const handleDelete = (recordId) => {
     if (window.confirm("Are you sure you want to delete this record?")) {
-      toast.info("Delete functionality coming soon");
+      window.showAlert("success", "Delete functionality coming soon");
       // TODO: Implement delete logic
     }
   };

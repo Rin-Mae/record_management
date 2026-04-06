@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 import { useAuth } from "../../contexts/AuthContext";
 import {
   FiMenu,
@@ -106,14 +105,18 @@ export default function PendingVerification() {
             perPage: response.pagination?.per_page || 10,
           });
         } else {
-          toast.error(
+          window.showAlert(
+            "error",
             "Failed to fetch records: " + (response.message || "Unknown error"),
           );
           setRecords([]);
         }
       } catch (error) {
         console.error("Failed to fetch pending records:", error);
-        toast.error("Failed to fetch pending records: " + error.message);
+        window.showAlert(
+          "error",
+          "Failed to fetch pending records: " + error.message,
+        );
         setRecords([]);
       } finally {
         setLoading(false);
@@ -152,12 +155,15 @@ export default function PendingVerification() {
       );
 
       if (response.success) {
-        toast.success(response.message);
+        window.showAlert("success", response.message);
         setShowVerificationModal(false);
         fetchRecords(pagination.currentPage);
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to verify record");
+      window.showAlert(
+        "error",
+        error.response?.data?.message || "Failed to verify record",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -165,7 +171,7 @@ export default function PendingVerification() {
 
   const handleDownloadFile = (file) => {
     if (!file) {
-      toast.error("File not available");
+      window.showAlert("error", "File not available");
       return;
     }
 
@@ -173,7 +179,7 @@ export default function PendingVerification() {
     const fileUrl = file.file_url || `/storage/${file.file_path}`;
 
     if (!fileUrl) {
-      toast.error("File URL not available");
+      window.showAlert("error", "File URL not available");
       return;
     }
 
@@ -184,15 +190,15 @@ export default function PendingVerification() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      toast.success("Download started");
+      window.showAlert("success", "Download started");
     } catch (error) {
-      toast.error("Failed to download file");
+      window.showAlert("error", "Failed to download file");
     }
   };
 
   const handleViewFile = (file) => {
     if (!file || !file.file_path) {
-      toast.error("File path not available");
+      window.showAlert("error", "File path not available");
       return;
     }
     setPreviewFile(file);
@@ -304,7 +310,7 @@ export default function PendingVerification() {
                           ".",
                         ]);
                         if (!validation.isValid) {
-                          toast.error(validation.message);
+                          window.showAlert("error", validation.message);
                           return;
                         }
                         setSearchTerm(value);
@@ -824,7 +830,8 @@ export default function PendingVerification() {
                       style={{ width: "100%", height: "60vh", border: "none" }}
                       title={previewFile.file_name}
                       onError={(e) => {
-                        toast.error(
+                        window.showAlert(
+                          "error",
                           "Failed to load PDF - try downloading instead",
                         );
                       }}

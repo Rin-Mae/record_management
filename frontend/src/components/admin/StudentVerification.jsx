@@ -3,7 +3,6 @@ import { FiCheckCircle, FiXCircle, FiTrash2 } from "react-icons/fi";
 import Sidebar from "../adminLayout/Sidebar";
 import { useAuth } from "../../contexts/AuthContext";
 import UserServices from "../../services/UserServices.jsx";
-import { toast } from "react-toastify";
 
 function StudentVerification() {
   const { user, logout } = useAuth();
@@ -38,7 +37,7 @@ function StudentVerification() {
       }
     } catch (error) {
       console.error("Failed to fetch students:", error);
-      toast.error("Failed to load student verifications");
+      window.showAlert("error", "Failed to load student verifications");
     } finally {
       setLoading(false);
     }
@@ -57,12 +56,12 @@ function StudentVerification() {
     try {
       const response = await UserServices.approveStudentVerification(studentId);
       if (response.status) {
-        toast.success("Student approved successfully");
+        window.showAlert("success", "Student approved successfully");
         fetchStudents(activeTab);
       }
     } catch (error) {
       console.error("Failed to approve student:", error);
-      toast.error("Failed to approve student");
+      window.showAlert("error", "Failed to approve student");
     } finally {
       setSubmitting(false);
     }
@@ -76,7 +75,7 @@ function StudentVerification() {
 
   const handleRejectSubmit = async () => {
     if (!rejectionReason.trim()) {
-      toast.error("Please provide a rejection reason");
+      window.showAlert("error", "Please provide a rejection reason");
       return;
     }
 
@@ -87,7 +86,7 @@ function StudentVerification() {
         { reason: rejectionReason },
       );
       if (response.status) {
-        toast.success("Student registration rejected");
+        window.showAlert("success", "Student registration rejected");
         setRejectionModal(false);
         setSelectedStudent(null);
         setRejectionReason("");
@@ -95,7 +94,7 @@ function StudentVerification() {
       }
     } catch (error) {
       console.error("Failed to reject student:", error);
-      toast.error("Failed to reject student");
+      window.showAlert("error", "Failed to reject student");
     } finally {
       setSubmitting(false);
     }

@@ -272,17 +272,6 @@ export default function RecordTypeManagement() {
                   <table className="table table-hover align-middle mb-0">
                     <thead className="table-success">
                       <tr>
-                        <th style={{ width: "40px" }}>
-                          <input
-                            type="checkbox"
-                            className="form-check-input"
-                            checked={
-                              selectedIds.length === recordTypes.length &&
-                              recordTypes.length > 0
-                            }
-                            onChange={handleSelectAll}
-                          />
-                        </th>
                         <th>Name</th>
                         <th>Description</th>
                         <th>Created</th>
@@ -292,19 +281,6 @@ export default function RecordTypeManagement() {
                     <tbody>
                       {recordTypes.map((recordType) => (
                         <tr key={recordType.id}>
-                          <td>
-                            <input
-                              type="checkbox"
-                              className="form-check-input"
-                              checked={selectedIds.includes(recordType.id)}
-                              onChange={(e) =>
-                                handleSelectType(
-                                  recordType.id,
-                                  e.target.checked,
-                                )
-                              }
-                            />
-                          </td>
                           <td className="fw-semibold">{recordType.name}</td>
                           <td>
                             <small className="text-muted">
@@ -424,14 +400,6 @@ export default function RecordTypeManagement() {
                 </div>
                 <div className="modal-footer">
                   <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => setShowModal(false)}
-                    disabled={submitting}
-                  >
-                    Cancel
-                  </button>
-                  <button
                     type="submit"
                     className="btn btn-success"
                     disabled={submitting}
@@ -484,13 +452,6 @@ export default function RecordTypeManagement() {
                 </p>
               </div>
               <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setShowDeleteModal(false)}
-                >
-                  Cancel
-                </button>
                 <button
                   type="button"
                   className="btn btn-danger"

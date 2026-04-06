@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 import { useAuth } from "../../contexts/AuthContext";
 import {
   FiMenu,
@@ -97,7 +96,7 @@ export default function StudentRecordsChecklist() {
       }
     } catch (error) {
       console.error("Error fetching checklist data:", error);
-      toast.error("Failed to load student records checklist");
+      window.showAlert("error", "Failed to load student records checklist");
     } finally {
       setLoading(false);
     }
@@ -209,7 +208,7 @@ export default function StudentRecordsChecklist() {
                           ".",
                         ]);
                         if (!validation.isValid) {
-                          toast.error(validation.message);
+                          window.showAlert("error", validation.message);
                           return;
                         }
                         setSearchTerm(value);

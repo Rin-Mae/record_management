@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FiUploadCloud, FiX } from "react-icons/fi";
 import { useAuth } from "../../contexts/AuthContext";
-import { toast } from "react-toastify";
 import StudentSidebar from "../studentLayout/StudentSidebar";
 import StudentRecordServices from "../../services/StudentRecordServices.jsx";
 import apiClient from "../../services/api";
@@ -32,7 +31,7 @@ function UploadRecord() {
         );
       } catch (error) {
         console.error("Failed to fetch record types:", error);
-        toast.error("Failed to load record types");
+        window.showAlert("error", "Failed to load record types");
         setRecordTypes([]);
       } finally {
         setLoadingTypes(false);
@@ -47,7 +46,8 @@ function UploadRecord() {
 
     // Check if adding new files would exceed the limit
     if (files.length + selectedFiles.length > MAX_FILES) {
-      toast.error(
+      window.showAlert(
+        "error",
         `Maximum ${MAX_FILES} files allowed. You can add ${MAX_FILES - files.length} more.`,
       );
       return;
@@ -68,13 +68,17 @@ function UploadRecord() {
     selectedFiles.forEach((file) => {
       // Validate file size (max 50MB)
       if (file.size > 50 * 1024 * 1024) {
-        toast.error(`${file.name}: File size must be less than 50MB`);
+        window.showAlert(
+          "error",
+          `${file.name}: File size must be less than 50MB`,
+        );
         return;
       }
 
       // Validate file type
       if (!allowedTypes.includes(file.type)) {
-        toast.error(
+        window.showAlert(
+          "error",
           `${file.name}: Unsupported file type. Please upload PDF, images, or Office documents.`,
         );
         return;
@@ -90,12 +94,12 @@ function UploadRecord() {
     e.preventDefault();
 
     if (files.length === 0) {
-      toast.error("Please select at least one file");
+      window.showAlert("error", "Please select at least one file");
       return;
     }
 
     if (!recordType) {
-      toast.error("Please select a record type");
+      window.showAlert("error", "Please select a record type");
       return;
     }
 
@@ -144,7 +148,6 @@ function UploadRecord() {
       );
 
       if (response.success) {
-        toast.success("Records uploaded successfully");
         setUploadedRecordType(recordTypes[recordType] || recordType);
         setShowInstructions(true);
         setFiles([]);
@@ -169,23 +172,24 @@ function UploadRecord() {
         // Show first validation error to user
         const firstError = Object.values(errorData.errors)[0];
         if (firstError && Array.isArray(firstError)) {
-          toast.error(firstError[0]);
+          window.showAlert("error", firstError[0]);
         } else {
-          toast.error(errorMessage);
+          window.showAlert("error", errorMessage);
         }
       } else {
         // Handle other error types
         if (error.response?.status === 419 || error.response?.status === 422) {
           if (errorMessage.includes("CSRF")) {
-            toast.error(
+            window.showAlert(
+              "error",
               "Security token expired. Please refresh the page and try again.",
             );
             console.warn("CSRF token mismatch - this should be auto-retried");
           } else {
-            toast.error(errorMessage);
+            window.showAlert("error", errorMessage);
           }
         } else {
-          toast.error(errorMessage);
+          window.showAlert("error", errorMessage);
         }
       }
     } finally {
